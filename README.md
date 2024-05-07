@@ -1,7 +1,9 @@
 # knowledge-tree
 api
 
-数据库连接暂不提供
+数据库连接暂不提供；
+
+数据内容目录 ——treeSql
 
 
 

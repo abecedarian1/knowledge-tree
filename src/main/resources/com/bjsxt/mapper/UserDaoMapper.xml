@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bjsxt.dao.UserDao">
+
+
+    <!--根据用户名称查询用户-->
+    <select id="findByUserName" parameterType="String" resultType="com.bjsxt.entity.User">
+        select id,username,password from test
+        where username = #{username}
+    </select>
+
+    <!--注册用户-->
+    <insert id="save" parameterType="User" useGeneratedKeys="true" keyProperty="id">
+        insert into test values(#{id},#{username},#{password})
+    </insert>
+
+</mapper>

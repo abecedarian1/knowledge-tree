@@ -1,0 +1,32 @@
+
+server:
+  port: 8081   #修改内嵌服务器的端口号
+  servlet:
+    context-path: /knowledge_tree   #修改项目名 注意：项目名必须“/”开头，请求接口的根目录
+
+
+#配置数据库
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.jdbc.Driver
+
+#   本地配置
+#    url: jdbc:mysql://localhost:3306/knowledge_tree?characterEncoding=UTF-8&useSSL=false
+#    username: 自己的数据库名
+#    password: 自己的密码
+
+
+
+
+#配置mybatis
+mybatis:
+  mapper-locations: classpath:com/bjsxt/mapper/**/*.xml
+  type-aliases-package: com.bjsxt.entity
+
+#配置日志使用
+logging:
+  level:
+    root: info
+    com.bjsxt: debug   #指定包日志
+

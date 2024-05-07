@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bjsxt.dao.KnowledgeContentDao">
+
+
+    <select id="listAll"  resultType="com.bjsxt.entity.KnowledgeContentEntity">
+        select * from knowledge_content
+        where parentId = #{id}
+    </select>
+
+    <insert id="add" parameterType="KnowledgeContentEntity" keyProperty="id">
+        insert into knowledge_content (content,parentId) values (#{content},#{parentId})
+    </insert>
+
+    <delete id="delete">
+        delete from knowledge_content where id = #{id}
+    </delete>
+
+    <update id="update">
+        update knowledge_content set content = #{content}
+        where parentId = #{parentId}
+    </update>
+</mapper>

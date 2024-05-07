@@ -1,0 +1,3 @@
+<view class="container"><view class="example"> 将给定的JSON中所有带“_”的key转为驼峰写法（如果“_”出现在key的开头或结尾，直接删除），并输出最终的结果 </view><view class="handleBox"><block wx:if="{{r0}}"><textarea placeholder="{{a}}" bindblur="{{b}}" value="{{c}}" bindinput="{{d}}">
+		  </textarea></block><block wx:if="{{r0}}"><textarea disabled placeholder="{{e}}" value="{{f}}" bindinput="{{g}}">
+		  </textarea></block></view></view>

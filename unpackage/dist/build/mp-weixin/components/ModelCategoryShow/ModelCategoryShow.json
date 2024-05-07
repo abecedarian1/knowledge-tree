@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "线上个人笔记",
+  "usingComponents": {
+    "vice-right-model": "../ViceRightModel/ViceRightModel",
+    "common-bar": "../CommonBar/CommonBar"
+  }
+}

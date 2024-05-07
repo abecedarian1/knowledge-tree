@@ -1,0 +1,1 @@
+<view class="main"><view class="bar"></view><view class="main-body"><block wx:if="{{$slots.d}}"><slot></slot></block><block wx:else>主体内容</block></view><view class="bottom"><view class="copyright"> 版权信息：Copyright©2024 <view></view> 联系邮箱：1584968548@qq.com </view></view></view>

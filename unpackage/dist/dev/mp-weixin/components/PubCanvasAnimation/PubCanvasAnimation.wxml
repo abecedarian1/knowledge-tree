@@ -1,0 +1,1 @@
+<view><canvas class="canvas" bindtap="{{a}}" type="2d" style="width:580rpx;height:200px" canvas-id="canvas1" width="600px" height="400px"></canvas></view>

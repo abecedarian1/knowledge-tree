@@ -1,0 +1,1 @@
+<view class="parent"><view class="full-screen"><cover-view class="{{c}}"><button class="button" bindtap="{{b}}">{{a}}</button><cover-view class="cover-view">全屏模式下的内容</cover-view></cover-view></view></view>

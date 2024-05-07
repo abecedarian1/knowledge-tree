@@ -1,0 +1,1 @@
+.modelTitle{font-size:20px;background-color:#e9cff5;text-align:center}.contentTitle{display:inline-block;width:100%;font-size:20px;font-weight:700;color:gray;text-align:center;margin:25rpx}.left-nav{height:90rpx;line-height:90rpx}.active{background-color:pink}.right-nav{background-color:snow;margin:8rpx;padding:10rpx}.content{padding:15rpx}

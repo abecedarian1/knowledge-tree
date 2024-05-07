@@ -1,0 +1,14 @@
+{
+  "navigationBarTitleText": "线上个人笔记",
+  "usingComponents": {
+    "pub-time-select-limit": "../../components/PubTimeSelectLimit/PubTimeSelectLimit",
+    "pub-to-do-list": "../../components/PubToDoList/PubToDoList",
+    "pub-side-bar": "../../components/PubSideBar/PubSideBar",
+    "pub-diagram": "../../components/PubDiagram/PubDiagram",
+    "pub-deep-copy": "../../components/PubDeepCopy/PubDeepCopy",
+    "pub-full-screen": "../../components/PubFullScreen/PubFullScreen",
+    "pub-canvas-animation": "../../components/PubCanvasAnimation/PubCanvasAnimation",
+    "pub-amount-transform": "../../components/PubAmountTransform/PubAmountTransform",
+    "common-bar": "../../components/CommonBar/CommonBar"
+  }
+}

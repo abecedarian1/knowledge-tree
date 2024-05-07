@@ -1,2 +1,4 @@
 # knowledge-tree
-vue + [uniapp]
+vue [PC]
+
+vue + elementPlus

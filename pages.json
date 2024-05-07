@@ -1,0 +1,46 @@
+{
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "线上个人笔记"
+			}
+		},
+		
+		//单独的模块封装页面
+		{
+			"path": "pages/component-quick-find/ComponentQuickFind",
+			"style": {
+				"navigationBarTitleText": "线上个人笔记"
+				// "navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "components/ModelCategoryShow/ModelCategoryShow",
+			"style": {
+				"navigationBarTitleText": "线上个人笔记"
+			}
+		},
+		{
+			"path": "pages/web-front/detail-content/ContentList",
+			"style": {
+				"navigationBarTitleText": "线上个人笔记"
+			}
+		}
+		
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "uni-app",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8"
+	},
+	
+	"uniIdRouter": {},
+	
+	"usingComponents":{
+		// "CommonBar":"/components/CommonBar/CommonBar",
+		// "WebFront":"/pages/web-front/WebFront.vue
+	}
+}

@@ -1,27 +1,23 @@
 <template>
     <div class="container">
-        <div class="dropzone"  @drop="drop" @dragstart="dragstart" @dragend="dragend" @dragenter="dragenter" @dragleave="dragleave">
+        <div class="dropzone"  @drop="drop" @dragstart="dragstart(true)" @dragend="dragend" @dragenter="dragenter" @dragleave="dragleave">
             <div class="drag-box" draggable="true">
                 <span class="delete-icon" @click="deleteNode(false)">X</span>
                 可拖拽框
-
-                拖拉事件还有问题啊：侧边栏能拖进来
             </div>
         </div>
 
-        <div class="dropzone" @drop="drop"  @dragstart="dragstart" @dragend="dragend" @dragover="dragover" @dragenter="dragenter" @dragleave="dragleave">
+        <div class="dropzone" @drop="drop"  @dragstart="dragstart(false)" @dragend="dragend" @dragover="dragover" @dragenter="dragenter" @dragleave="dragleave">
         </div>
 
-        <div class="dropzone" @drop="drop"  @dragstart="dragstart" @dragend="dragend" @dragover="dragover" @dragenter="dragenter" @dragleave="dragleave">
+        <div class="dropzone" @drop="drop"  @dragstart="dragstart(false)" @dragend="dragend" @dragover="dragover" @dragenter="dragenter" @dragleave="dragleave">
         </div>
 
-        <div class="dropzone" @drop="drop"  @dragstart="dragstart" @dragend="dragend" @dragover="dragover" @dragenter="dragenter" @dragleave="dragleave">
+        <div class="dropzone" @drop="drop"  @dragstart="dragstart(false)" @dragend="dragend" @dragover="dragover" @dragenter="dragenter" @dragleave="dragleave">
         </div>
 
-        <div class="dropzone" @drop="drop"  @dragstart="dragstart" @dragend="dragend" @dragover="dragover" @dragenter="dragenter" @dragleave="dragleave">
+        <div class="dropzone" @drop="drop"  @dragstart="dragstart(false)" @dragend="dragend" @dragover="dragover" @dragenter="dragenter" @dragleave="dragleave">
         </div>
-
-        
     </div>
 </template>
 
@@ -29,16 +25,20 @@
 
 <script setup>
     import {ref} from 'vue'
-    const drag = ref()
+    const drag = ref();
+    const dragCopy = ref();
+
 
     //开始移动了
-    const dragstart=(e)=>{
-        if(e.target.className == 'drag-box'){
-            drag.value = e.target
+    const dragstart=(boolean)=>{
+        if(event.target.className == 'drag-box'){
+            if(boolean){
+                drag.value = event.target
+            }else{
+                dragCopy.value = event.target
+            }
             //拖拉过程中，被拖拉元素的状态
-            e.target.style.backgroundColor='rgb(152, 166, 226,0.5)';
-        }else{
-            drag.value = ''
+            event.target.style.backgroundColor='rgb(152, 166, 226,0.5)';
         }
     }
     
@@ -48,12 +48,15 @@
         if(e.target.className=='drag-box'){
             e.target.style.backgroundColor='rgb(152, 166, 226)';
         }
+        //放置完成后，清空拖拉数据
+        drag.value = ''
+        dragCopy.value = ''
     }
 
     //连续触发
     //设置允许放置到当前节点的条件--使得drop事件起作用；同时防止拖拉效果被重置
     const dragover=(e)=>{
-        if(drag.value && e.target.childNodes.length==0){
+        if((drag.value|| dragCopy.value) && e.target.childNodes.length==0){
             e.preventDefault();
         }
     }
@@ -62,7 +65,7 @@
     //该事件会冒泡====
     const dragenter=(e)=>{
         //只有拖动允许拖拉的元素才会触发
-        if(e.target.className=='dropzone' && drag.value){
+        if(e.target.className=='dropzone' && (drag.value || dragCopy.value)){
             e.target.style.backgroundColor = 'rgb(128, 128, 128,0.2)'
         }
     }
@@ -70,20 +73,28 @@
     //从当前节点离开了
     const dragleave=(e)=>{
         //只有允许拖拉的元素离开才会触发
-        if(drag.value){
+        if(drag.value || dragCopy.value){
             e.target.style.backgroundColor = ''
         }
     }
 
     //向当前节点放拖拉对象
     const drop=(e)=>{
-        let cloneNode = drag.value.cloneNode(true)
-        let eventNode = cloneNode.children[0]
-        eventNode.style.display = 'inline'
-        eventNode.addEventListener('click',()=>{deleteNode(true)},false);
-        e.target.appendChild(cloneNode)
-        cloneNode.style.backgroundColor='rgb(152, 166, 226)';
-        e.target.style.backgroundColor = ''
+        if(e.target.childNodes.length==0){
+            if(drag.value){
+                let cloneNode = drag.value.cloneNode(true)
+                let eventNode = cloneNode.children[0]
+                eventNode.style.display = 'inline'
+                eventNode.addEventListener('click',()=>{deleteNode(true)},false);
+                e.target.appendChild(cloneNode)
+                cloneNode.style.backgroundColor='rgb(152, 166, 226)';     
+            }else if(dragCopy.value){
+                dragCopy.value.parentNode.removeChild(dragCopy.value);
+                e.target.appendChild(dragCopy.value)
+                dragCopy.value.style.backgroundColor='rgb(152, 166, 226)';     
+            }
+            e.target.style.backgroundColor = ''
+        }
     }
 
 

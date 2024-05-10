@@ -14,23 +14,31 @@ vue + elementPlus
     (4)配置CSS压缩抽取
     (5)引入 vue-loader ,处理单文件组件
     提速10s，压缩3M
-
+    
     参考官网:https://www.webpackjs.com/loaders/
             https://cli.vuejs.org/zh/guide/
             https://vue-loader.vuejs.org/zh/
 
 ## 3. package.js中的 dependencies 和 devDependencies 的区别
    (1)"dependencies"   
-      项目运行所在环境
-      包下载命令:
-         npm install xxx --save
-         npm  install xxx
+
+​      项目运行所在环境
+
+​       包下载命令:
+
+​            npm install xxx --save
+
+​            npm  install xxx
 
    (2)"devDependencies"
-      项目打包所在环境 ————并且安装包不会打包到最终产物中(不确定)
-      包下载命令:
-         npm install -D   xxx 
-         npm install  xxx --save-dev
+
+​      项目打包所在环境 ————并且安装包不会打包到最终产物中(不确定)
+
+​      包下载命令:
+
+​           npm install -D   xxx 
+
+​           npm install  xxx --save-dev
 
 
 

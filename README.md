@@ -13,8 +13,7 @@ vue + elementPlus
     (3)配置babel-loader编译缓存（加快二次打包速度）,配置代码压缩
     (4)配置CSS压缩抽取
     (5)引入 vue-loader ,处理单文件组件
-    提速10s，压缩3M
-    
+    (6)删除打包文件中的源码：productionSourceMap: false,    
     参考官网:https://www.webpackjs.com/loaders/
             https://cli.vuejs.org/zh/guide/
             https://vue-loader.vuejs.org/zh/

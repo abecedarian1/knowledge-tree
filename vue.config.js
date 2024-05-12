@@ -3,9 +3,10 @@ const AutoImport = require('unplugin-auto-import/webpack')
 const Components = require('unplugin-vue-components/webpack')
 const { ElementPlusResolver } = require('unplugin-vue-components/resolvers')
 const { VueLoaderPlugin } = require('vue-loader')
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+// const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 module.exports = {
+    productionSourceMap: false,
     //Webpack中的自定义配置项  ---vue-cli中只能配置部分webpack项
     configureWebpack: {
         module:{
@@ -34,15 +35,17 @@ module.exports = {
                             ],
                         },
 
-                        {
-                            test:/\.scss$/,
-                            exclude:/node_modules/,
-                            use:[
-                                process.env.NODE_ENV != 'production' ? 'vue-style-loader' : MiniCssExtractPlugin.loader,
-                                'css-loader',
-                                'sass-loader'
-                            ]
-                        }
+                        // 前端运行有时候正常，有时候报错，不知道是不是和默认配置冲突了
+                        // {
+                        //     test:/\.scss$/,
+                        //     exclude:/node_modules/,
+                        //     use:[
+                        //         process.env.NODE_ENV != 'production' ? 'vue-style-loader' : MiniCssExtractPlugin.loader,
+                        //         'css-loader',
+                        //         'sass-loader'
+                        //     ]
+                        // }
+
                         // {
                         //     test:/\.s[ac]ss$/i,
                         //     exclude:/node_modules/,

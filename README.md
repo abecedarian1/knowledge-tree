@@ -19,14 +19,23 @@ vue + elementPlus
 
 ## 3. package.js中的 dependencies 和 devDependencies 的区别
    (1)"dependencies"   
+
 ​      项目运行所在环境
+
 ​       包下载命令:
+
 ​            npm install xxx --save
+
 ​            npm  install xxx
+
    (2)"devDependencies"
+
 ​      项目打包所在环境 ————并且安装包不会打包到最终产物中(不确定)
+
 ​      包下载命令:
+
 ​           npm install -D   xxx 
+
 ​           npm install  xxx --save-dev
 
 ## 3. electorn 客户端开发

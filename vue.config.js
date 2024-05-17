@@ -22,7 +22,7 @@ module.exports = {
                             {
                                 loader:'babel-loader',
                                 options:{
-                                    //第二次打包会变快 ---项目小，反而会导致变慢
+                                    //第二次打包会变快
                                     cacheDirectory:true,  //开启babel编译缓存
                                     cacheCompression:false,  //缓存文件不要压缩
                                         //下面部分写到babel.config.js中

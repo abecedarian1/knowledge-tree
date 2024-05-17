@@ -3,13 +3,10 @@ import { ElMessage } from "element-plus";
 import router from "@/router";
 //通用用法
 // axios.defaults.baseURL = "http://localhost:8081/knowledge_tree/swagger"
-
 // 调用create方法来创建相应的实例---可以用于创建多个不同的请求地址的情况
 const baseService = axios.create({
-    // 后端地址----本地配置
-    // baseURL:'http://localhost:8081/knowledge_tree/swagger',
     //服务端地址 
-    baseURL:'http://39.105.220.189:8081/knowledge_tree/swagger',
+    baseURL:process.env.VUE_APP_API,
 })
 
 

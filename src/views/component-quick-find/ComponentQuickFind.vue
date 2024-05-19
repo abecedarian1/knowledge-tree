@@ -72,21 +72,9 @@
                      <draggable-box></draggable-box>
                 </el-tab-pane>
               
-<!--
-                <el-tab-pane label="数据结构平铺">
-                    还没写
+                <el-tab-pane label="数据嵌套平铺">
+                    <data-flat></data-flat>
                 </el-tab-pane>
-
-                <el-tab-pane label="目前问题">
-                    <ol>
-                        <li>
-                            项目打包体积过大，需要优化
-                        ————应该是引入sass-loader的原因
-                        </li>
-                    </ol>
-                    
-                </el-tab-pane>
--->
 
             </el-tabs>
         </div>
@@ -105,6 +93,7 @@ import FullScreen from './components/FullScreen.vue'
 import CanvasAnimation from './components/CanvasAnimation.vue'
 import AmountTransform from './components/AmountTransform.vue'
 import DraggableBox from './components/DraggableBox.vue'
+import DataFlat from './components/DataFlat.vue'
 
 //默认折叠
 const shrinkOrNot = ref(false)

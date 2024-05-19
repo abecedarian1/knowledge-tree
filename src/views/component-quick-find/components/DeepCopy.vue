@@ -1,27 +1,17 @@
 <template>
-    <div>
+    <div class="content-box">
         <div class="example">
           将给定的JSON中所有带“_”的key转为驼峰写法（如果“_”出现在key的开头或结尾，直接删除），并输出最终的结果        
         </div>
 
         <div class="handleBox">
-          <textarea cols="50" rows="35" v-model="inputObj" :placeholder="inputPlaceholder" @blur="returnResut">
+          <textarea  v-model="inputObj" :placeholder="inputPlaceholder" @blur="returnResut">
           </textarea>
   
-          <br>
-
-          <!-- <div>
-            <json-viewer
-                :value=outputObj
-                :expand-depth=4
-                copyable
-                sort>
-            </json-viewer>
-          </div> -->
 
         
   
-          <textarea disabled v-model="outputObj"  cols="50" rows="35" :placeholder="outputPlaceholder">
+          <textarea disabled v-model="outputObj" :placeholder="outputPlaceholder">
           </textarea>
   
         </div>
@@ -75,13 +65,18 @@ const outputPlaceholder = ref(`输出：
 
 
 
-
-
 const returnResut=()=>{
   if(inputObj.value){
-    let obj = eval('('+inputObj.value+')');
-    loopBody(obj)
-    outputObj.value = JSON.stringify(obj,null,'\t')
+
+    try{
+      let obj = eval('('+inputObj.value+')');
+      loopBody(obj)
+      outputObj.value = JSON.stringify(obj,null,'\t')
+
+    }catch(e){
+      outputObj.value = '请输入正确的格式！！！！'
+    }
+    
   }else{
     outputObj.value = ''
   }
@@ -143,21 +138,53 @@ const loopBody = function(obj){
 
 </script>
 
-<style>
+<style lang="scss" scoped>
 
-.handleBox{
-  display:flex;
-  flex-direction: row;
-  justify-content: center;
-  textarea{
-    margin-left: 10px;
-  }
+
+.content-box{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-sizing: border-box;
+        
+    .example{
+        padding: 10px;
+        color:red
+    } 
+
+    
+    .handleBox{
+        flex-grow: 1;
+        position:relative;
+
+        display:flex;
+        flex-direction: row;
+        justify-content: center;
+        textarea{
+            flex: 1 1 100px ;
+            resize:none;
+            margin-left: 10px;
+        }
+    }
+
+
 }
 
-.example{
-  margin: 10px;
-  color:red
 
-}
+// .handleBox{
+//   display:flex;
+//   flex-direction: row;
+//   justify-content: center;
+//   textarea{
+//     margin-left: 10px;
+//   }
+// }
+
+// .example{
+//   margin: 10px;
+//   color:red
+
+// }
 
 </style>

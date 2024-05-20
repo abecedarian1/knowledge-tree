@@ -168,32 +168,35 @@ const emitTimeData =(val)=>{
  
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+@import  '../../assets/css/vue.scss';
+
+$content-height:calc(100vh - $topBarHeight - $userBarHeight - $footerHeight);
+
     .user_bar{
         width:100%;
-        height:70px;
+        height:$userBarHeight;
         background-color:#D9B2B1;
-        line-height: 70px;
+        line-height:$userBarHeight;
     }
 
     .content{
         position: relative;
         width:100%;
         height:540px;
+        min-height: $content-height;
         background-color:white;
-    }
-    
-    .demo-tabs{
-        position: relative;
-        height:100% !important;
         
+        .demo-tabs{
+            position: relative;
+            height:100% !important;            
+        }
     }
-
     
-
+    
     /* 这两个必须有 */
-    /* 和侧边栏的高度有关 */
-    .el-tabs /deep/ .el-tabs__content,
+    /* 和 nav-bar模块 侧边栏的高度有关 */
+    .el-tabs ::v-deep .el-tabs__content,
     .el-tab-pane
     {
         position: relative;
@@ -213,7 +216,7 @@ const emitTimeData =(val)=>{
         
     }
      /* 修改tab背景色 */
-    .el-tabs /deep/ .el-tabs__header.is-left {
+    .el-tabs ::v-deep .el-tabs__header.is-left {
         background-color: #fbedf7;
     }
 

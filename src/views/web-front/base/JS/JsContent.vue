@@ -43,6 +43,8 @@ onMounted(()=>{
 
 <style scoped>
     .content{
+        word-break: break-all;
+        overflow-x: auto;
         padding: 10px 10px;
 
     }

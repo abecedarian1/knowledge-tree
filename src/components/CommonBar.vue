@@ -1,8 +1,8 @@
 <template>
 
-    <div class="main">
+    <div class="box11">
         <div class="bar"></div>
-        <div>
+        <div class="">
             <router-view></router-view>
         </div>
       
@@ -24,35 +24,36 @@
 </script>
 
 
-<style scoped>
-  
-    .main{
+<style lang="scss" scoped>
+  @import "../assets/css/vue.scss";
+
+    .box{
         position: relative;
-        /* width:1200px; */
         width:95%;
         margin:0 auto;
     }
 
-    
-
     .bar{
         width:100%;
-        height:28px;
+        height: $topBarHeight;
         background-color:#596370;
     }
   
     .bottom{
         width:100%;
-        height:10%;
-        height:70px;
+        height:$footerHeight;
         background-color:#292e34;
-        position:absolute;
+
+        display: flex;
+        flex-direction: column;
+
+        .copyright{
+            color:white;
+            font-family:楷体;
+            text-align:center;
+        }
     }
 
-    .copyright{
-        color:white;
-        font-family:楷体;
-        text-align:center;
-    }
+   
   
 </style>

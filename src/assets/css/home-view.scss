@@ -1,0 +1,118 @@
+@import "./vue.scss";
+$content-height:calc(100vh - $topBarHeight - $footerHeight - $bannerHeight);
+
+.banner{
+  width:100%;
+  height: $bannerHeight;
+  position:relative;
+  background-color: #292e34;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .banner_pic{
+    width:100%;
+    height:100%;
+    opacity:0.5;  /*支持CSS3浏览器*/
+    -moz-opacity:0.5   /*Moz+FF*/
+  }
+
+  .tittle_bg{
+    width:100%;
+    height:17%;
+    background-color:#b7b5b0;
+    position:absolute;
+    top:6%
+  }
+
+  .tittle{
+    position:absolute;
+    top:0%;
+    color: #a16760;
+    font-size:18px;
+    text-shadow:5px -5px 15px white,-5px 5px 15px gray;
+  }
+
+    
+  .search{
+    width:80%;
+    height:20%;
+    background-color:#c8d6bd;
+    border-radius:80px;
+
+    position:absolute;
+    bottom:10%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    
+
+
+  }
+  .search_content{
+    background-color:#d0dde5;
+    border-radius:20px 0 0 20px;
+    width:75%;
+    height:50px;
+    border:none;
+    float:left;
+    font-size:15px;
+    box-sizing: border-box;
+    padding:0 10px;
+  }
+  .search_button{
+    border-radius:0 20px 20px 0;
+    width:25%;
+    height:50px;
+    border:0px;
+    float:left;
+    font-size:20px;
+    background-color:#a8b1bc;
+  }
+}
+
+.content{
+  box-sizing: border-box;
+  position:relative;
+  
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width:100%;
+  min-height: $content-height;
+  background-color:#eae6e2;
+  padding: 5px;  
+  
+    ul{
+      display:flex;
+      flex-direction:row;
+      flex-wrap: wrap;
+      justify-content:center;
+      align-items: center;
+       
+      width: 100%;
+      @for $i from 1 through 10 {
+        li:nth-child(#{$i}) {
+          background-color: nth($homeMainBgColor,$i);
+        }
+      }
+
+      li{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex:1 1 28%;
+        font-size:20px;
+        height: 300px;
+        min-height: calc($content-height * 0.25);
+        margin: 5px;
+        font-weight: 600;
+      }
+    }
+
+}
+
+

@@ -32,19 +32,20 @@ module.exports = {
                             }
                         ],
                     },
-                    {
-                        test:/\.s[ac]ss$/,
-                        exclude:/node_modules/,
-                        use:[
-                            //将JS字符串生成为style节点
-                            // "style-loader",
-                            MiniCssExtractPlugin.loader,
-                            //将CSS转化成CommonJS模块
-                            'css-loader',
-                            //将Sass编译成CSS
-                            'sass-loader'
-                        ]
-                    }
+                    // scss打包还有问题  css  是不是也得写上来
+                    // {
+                    //     test:/\.s[ac]ss$/,
+                    //     exclude:/node_modules/,
+                    //     use:[
+                    //         //将JS字符串生成为style节点
+                    //         // "style-loader",
+                    //         MiniCssExtractPlugin.loader,
+                    //         //将CSS转化成CommonJS模块
+                    //         'css-loader',
+                    //         //将Sass编译成CSS
+                    //         'sass-loader'
+                    //     ]
+                    // }
                 ]
             })
             config.plugins.push(

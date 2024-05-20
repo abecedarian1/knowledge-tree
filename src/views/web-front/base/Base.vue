@@ -65,25 +65,26 @@ watch(()=> router.currentRoute.value.path,
 </script>
 
 
-<style scoped>
-
+<style lang="scss" scoped>
 
     ul{
-        margin: 10px;
+        position: relative;
         display: flex;
         flex-direction: row;
         justify-content: flex-start;
         align-items: center;
         flex-wrap: wrap;
+
+        li{
+            position: relative;            
+            margin: 5px;
+            flex:1 1 28%;
+            background-color: powderblue;
+            line-height:150px;
+        }
+
     }
 
-    li{
-        width: 31%;
-        height: 250px;
-        margin: 10px;
-        background-color: powderblue;
-        line-height: 250px;
-
-    }
+    
 
 </style>

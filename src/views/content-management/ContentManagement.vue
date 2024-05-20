@@ -356,64 +356,59 @@ const deleteItem = (id)=>{
 
 </script>
 
-<style scoped>
-
+<style lang="scss" scoped>
+@import "../../assets/css/vue.scss";
     
+$content-height:calc(100vh - $topBarHeight - $userBarHeight - $footerHeight);
+
     .user_bar{
         width:100%;
-        height:70px;
+        height:$userBarHeight;
         background-color:#D9B2B1;
-        line-height: 70px;
+        line-height: $userBarHeight;
     }
 
     .content{
+        box-sizing: border-box;
         position: relative;
+        display: flex;
+        flex-direction: row;
         width:100%;
-        height:540px;
+        min-height: $content-height;
         background-color:white;
-        overflow: auto;
+
+        .option_bar1{
+            position: relative;
+            box-sizing: border-box;
+            width:25%;
+            overflow: auto;
+            background-color:#FBEDF7;        
+            .el-tree{
+                background-color:#FBEDF7;
+            }
+        }
+            
+        .box_1{
+            box-sizing: border-box;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            width:75%;
+            padding: 10px;
+
+            ul{
+                width: 90%;
+                margin-top: 10px;
+                display: flex;
+                flex-direction: column;
+
+                li {
+                    margin: 5px 0;
+                    background-color: snow;
+                }
+            }
+        }
     }
-
-    .option_bar1
-    {
-        width:10%;
-        min-width: 7rem;
-        height:100%;
-        overflow: auto;
-        background-color:#FBEDF7;        
-        float:left;
-    }
-
-    .option_bar1 .el-tree{
-        background-color:#FBEDF7;
-    }
-
-  
-    .box_1{
-        /* border: solid blue 1px; */
-
-        position: relative;
-        width: 90%-20px;
-
-        height: 520px;
-
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 10px;
-    }
-
-    .box_1 ul{
-        width: 90%;
-        margin-top: 10px;
-        display: flex;
-        flex-direction: column;
-    }
-    .box_1 ul li {
-        margin: 5px 0;
-        background-color: snow;
-    }
-
-    
 
 </style>

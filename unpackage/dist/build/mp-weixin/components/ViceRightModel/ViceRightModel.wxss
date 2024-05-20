@@ -1,1 +1,0 @@
-.right-model{position:relative;display:flex;flex-wrap:wrap}.right-model .navigator-wrap{flex:1 1 29%}.right-model .model{flex:1 1 29%;height:270rpx;margin:10rpx;text-align:center;line-height:270rpx;background-color:#b0e0e6}

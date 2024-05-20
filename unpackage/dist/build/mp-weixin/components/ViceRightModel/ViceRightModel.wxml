@@ -1,1 +1,0 @@
-<view wx:if="{{a}}" class="right-model"><navigator wx:for="{{b}}" wx:for-item="item" wx:key="b" class="model" url="{{item.c}}">{{item.a}}</navigator></view>

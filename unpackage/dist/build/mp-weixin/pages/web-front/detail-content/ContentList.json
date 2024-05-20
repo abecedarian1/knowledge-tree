@@ -1,6 +1,0 @@
-{
-  "navigationBarTitleText": "线上个人笔记",
-  "usingComponents": {
-    "model-category-show": "../../../components/ModelCategoryShow/ModelCategoryShow"
-  }
-}

@@ -63,9 +63,13 @@
 			
 			returnResut(){
 			  if(this.inputObj){
-			    let obj = eval('('+this.inputObj+')');
-			    this.loopBody(obj)
-			    this.outputObj = JSON.stringify(obj,null,'\t')
+				  try{
+				   let obj = eval('('+this.inputObj+')');
+				   this.loopBody(obj)
+				   this.outputObj = JSON.stringify(obj,null,'\t')
+				  }catch(e){
+					this.outputObj = '请输入正确的格式！！！！'
+				  }
 			  }else{
 			    this.outputObj = ''
 			  }

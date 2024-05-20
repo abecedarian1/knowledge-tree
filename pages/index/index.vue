@@ -20,7 +20,9 @@
 						
 						<!-- //公共组件 -->
 						<!-- tabarPage -->
-						<navigator v-if="index==9"
+						
+						<!-- <navigator v-if="index==9" -->
+						<navigator v-if="item.name=='内容管理'"
 							class="navigator-item" 
 							url="/pages/component-quick-find/ComponentQuickFind">
 							{{item.name}}

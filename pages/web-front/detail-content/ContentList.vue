@@ -56,6 +56,7 @@
 				titleName:'',
 				modelTitle:'',
 				sideBarList:[],
+				// 文本内容唯一id
 				id:'',
 				detailContent:'',
 				contentTitle:'',

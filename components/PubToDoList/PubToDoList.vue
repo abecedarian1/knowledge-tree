@@ -130,10 +130,6 @@
 				for(let i=0;i<toDoList.length;i++){
 					let item = toDoList[i]
 					if(selectValues.includes(item.id)){
-						//  小程序不起作用
-						//法一
-						// this.$set(item,'select',true)
-						//法二
 						this.toDoList[i].select = true
 					}else{
 						this.toDoList[i].select = false
@@ -146,13 +142,11 @@
 				if(selectValues.includes('all')){
 					this.selectAll = true
 					this.toDoList.forEach((item)=>{
-						// this.$set(item,'select',true)
 						item.select = true
 					})
 				}else{
 					this.selectAll = false
 					this.toDoList.forEach((item)=>{
-						// this.$set(item,'select',false)
 						item.select = false
 					})
 				}
@@ -173,6 +167,8 @@
 		},
 		
 		watch:{
+			// vue2中，一般来说模板是不能直接监听到 checkboxChange() 和 checkAllChange()函数中对 toDoList数组内部值的修改的，
+			//vue3的 选项式API写法内部，data的返回值对象会通过reactive()这个公开的API函数转为响应式————状态管理
 			//修改selectAll 对照 checkAllChange()
 			toDoList:{
 				handler(newVal,old){

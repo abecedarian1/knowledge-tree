@@ -1,1 +1,0 @@
-<view class="box"><view class="single-line"><text>转换的数字：</text><input type="text" placeholder="输入的数字" bindblur="{{a}}" value="{{b}}" bindinput="{{c}}"></input></view><view class="single-line"><text>千分位结果：</text><input type="text" placeholder="返回的值" value="{{d}}" bindinput="{{e}}"></input></view></view>

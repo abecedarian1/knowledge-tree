@@ -119,7 +119,7 @@ onMounted(()=>{
     
     .option_bar{
         width: 15%;
-        overflow: scroll-y;
+        overflow-y: auto;
         min-height: calc(100vh - $topBarHeight - $footerHeight - $userBarHeight);
         background-color:#FBEDF7;
 

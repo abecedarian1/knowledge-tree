@@ -10,8 +10,7 @@
         
         <!-- 组件内容 -->
         <div class="content" >   
-            
-            <el-tabs type="border-card"  tab-position="left" style="height: 200px" class="demo-tabs">
+            <el-tabs type="border-card"  tab-position="left" class="demo-tabs">
                 <el-tab-pane label="时间选择器">
                     <!-- 如果想要封装成组件的话，需要 子传父 直接获取最终值 emit，
                         也可以 :ref="(el)=>{child = el}" 
@@ -76,6 +75,9 @@
                     <data-flat></data-flat>
                 </el-tab-pane>
 
+                <el-tab-pane label="响应式布局参考">
+                    <responsive-layout-reference></responsive-layout-reference>
+                </el-tab-pane>
             </el-tabs>
         </div>
 
@@ -94,6 +96,7 @@ import CanvasAnimation from './components/CanvasAnimation.vue'
 import AmountTransform from './components/AmountTransform.vue'
 import DraggableBox from './components/DraggableBox.vue'
 import DataFlat from './components/DataFlat.vue'
+import ResponsiveLayoutReference from './components/ResponsiveLayoutReference.vue'
 
 //默认折叠
 const shrinkOrNot = ref(false)
@@ -180,28 +183,47 @@ $content-height:calc(100vh - $topBarHeight - $userBarHeight - $footerHeight);
         line-height:$userBarHeight;
     }
 
+
     .content{
+        box-sizing: border-box;
         position: relative;
         width:100%;
-        height:540px;
         min-height: $content-height;
         background-color:white;
+        /*
+            *该父元素没有height,只有min-height，
+            *子元素在继承父元素高度的时候，是按照height:0继承的
+            *使用 display:flex 可以形成BFC,让系统重新计算整个内容（父元素）的高度 
+        */
+        display:flex;
+        flex-direction:row;
         
+        /* 整个tab组件 */
         .demo-tabs{
+            box-sizing: border-box;
             position: relative;
-            height:100% !important;            
+            display: flex;
+            flex-direction: row;
+            width: 100%; /* 覆盖组件默认的宽度计算 */
+            min-height:100%;  /*继承父元素高度*/
+            
+            ::v-deep .el-tabs__header{
+                height: unset !important;  /*取消tab的默认的高度100%，跟随flex布局自适应*/
+            }
+          
+            /* 和 nav-bar模块 侧边栏的高度有关 */
+            ::v-deep .el-tabs__content{
+                position: relative;
+                padding: 0;
+                flex-grow: 1;
+                /* 每个tab页面的内容 */
+                .el-tab-pane{
+                    position: relative;
+                    height: 100%;
+                    padding: 0;
+                }
+            }
         }
-    }
-    
-    
-    /* 这两个必须有 */
-    /* 和 nav-bar模块 侧边栏的高度有关 */
-    .el-tabs ::v-deep .el-tabs__content,
-    .el-tab-pane
-    {
-        position: relative;
-        height: 100%;
-        padding: 0;
     }
     
    

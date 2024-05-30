@@ -37,25 +37,3 @@ vue + elementPlus
 ​           npm install -D   xxx 
 
 ​           npm install  xxx --save-dev
-
-## 3. electorn 客户端开发
-### （1）全局包下载 
-
- 		动态更新electron修改
-
-```nodejs
-npm install nodemon -g
-```
-
-### （2）客户端运行：
-
-```nodejs
-npm  start
-```
-
-### （3）打包成本地应用
-
-~~~nodejs
-npm run make
-~~~
-

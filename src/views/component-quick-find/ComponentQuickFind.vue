@@ -10,19 +10,19 @@
         
         <!-- 组件内容 -->
         <div class="content" >   
-            <el-tabs type="border-card"  tab-position="left" class="demo-tabs">
-                <el-tab-pane label="时间选择器">
+            <el-tabs v-model="activeName" type="border-card"  tab-position="left" class="demo-tabs">
+                <el-tab-pane label="时间选择器" name='TimeSelectLimit'>
                     <!-- 如果想要封装成组件的话，需要 子传父 直接获取最终值 emit，
                         也可以 :ref="(el)=>{child = el}" 
                     -->
                     <time-select-limit @emitData="emitTimeData"></time-select-limit>
                 </el-tab-pane>
 
-                <el-tab-pane label="ToDoList">
+                <el-tab-pane label="ToDoList" name="ToDoList">
                     <to-do-list></to-do-list>
                 </el-tab-pane>
 
-                <el-tab-pane label="导航栏">
+                <el-tab-pane label="导航栏" name="SideBar"> 
                     <side-bar 
                         @changeStatus="changeStatus" 
                         v-model:shrinkOrNot="shrinkOrNot"
@@ -49,35 +49,44 @@
                     </side-bar>
                 </el-tab-pane>
 
-                <el-tab-pane label="图表">
+                <el-tab-pane label="图表" name="Diagram">
                     <Diagram></Diagram>
                 </el-tab-pane>
 
-                <el-tab-pane label="深度遍历">
+                <el-tab-pane label="深度遍历" name="DeepCopy">
                     <deep-copy></deep-copy>
                 </el-tab-pane>
 
-                <el-tab-pane label="全屏">
+                <el-tab-pane label="全屏" name="FullScreen">
                     <full-screen></full-screen>
                 </el-tab-pane>
-                <el-tab-pane label="canvas小动画">
+                <el-tab-pane label="canvas小动画" name="CanvasAnimation">
                     <canvas-animation></canvas-animation>
                 </el-tab-pane>
 
-                <el-tab-pane label="金额格式化(千分位)">
+                <el-tab-pane label="金额格式化(千分位)" name="AmountTransform">
                     <amount-transform></amount-transform> 
                 </el-tab-pane>
-                <el-tab-pane label="可拖拽移动框">
+                <el-tab-pane label="可拖拽移动框" name="DraggableBox">
                      <draggable-box></draggable-box>
                 </el-tab-pane>
               
-                <el-tab-pane label="数据嵌套平铺">
+                <el-tab-pane label="数据嵌套平铺" name="DataFlat">
                     <data-flat></data-flat>
                 </el-tab-pane>
 
-                <el-tab-pane label="响应式布局参考">
+                <el-tab-pane label="响应式布局参考" name="ResponsiveLayoutReference">
                     <responsive-layout-reference></responsive-layout-reference>
                 </el-tab-pane>
+
+                <el-tab-pane label="fetch实现在线视频流读取" name="VideoStreamRead">
+                    <video-stream-read></video-stream-read>
+                </el-tab-pane>
+
+                <el-tab-pane label="数据流的生成和读取" name="DataStreamGenerateRead">
+                    <data-stream-generate-read></data-stream-generate-read>
+                </el-tab-pane>
+
             </el-tabs>
         </div>
 
@@ -97,13 +106,16 @@ import AmountTransform from './components/AmountTransform.vue'
 import DraggableBox from './components/DraggableBox.vue'
 import DataFlat from './components/DataFlat.vue'
 import ResponsiveLayoutReference from './components/ResponsiveLayoutReference.vue'
+import VideoStreamRead from './components/VideoStreamRead.vue'
+import DataStreamGenerateRead from './components/DataStreamGenerateRead.vue'
+
 
 //默认折叠
 const shrinkOrNot = ref(false)
 const navList = ref([])
 const firstLoad = ref(true)
 const selectItem = ref()
-
+const activeName = ref('VideoStreamRead')
 
 //生成随机导航数组  并排序 去重
 const getRandomDataList=()=>{
@@ -151,9 +163,6 @@ watch(shrinkOrNot,(oldVal,newVal)=>{
         firstLoad.value = false            
     }
 })
-
-
-
 
 
 const emitTimeData =(val)=>{

@@ -37,3 +37,37 @@ vue + elementPlus
 ​           npm install -D   xxx 
 
 ​           npm install  xxx --save-dev
+
+## 4.跨域问题
+
+当请求地址不是当前服务器地址时(例如 https://interactive-examples.mdn.mozilla.net)，需要进行跨域配置
+
+> 本地运行跨域参照vue.config.js中的devServer配置
+
+线上发布项目需要使用nginx代理进行如下配置：
+
+（参照vue.config.js中的代理配置）
+
+>server {
+>
+>​    listen 前端启动端口号;
+>
+>​    location /demoviedo/ {
+>
+>​        proxy_pass https://interactive-examples.mdn.mozilla.net;
+>
+> 	   proxy_set_header Host $host;
+>
+>​        proxy_set_header X-Real-IP $remote_addr;
+>
+>​        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+>
+>​	    proxy_set_header X-Forwarded-Proto $scheme;
+>
+>​    }
+>}
+
+
+
+
+

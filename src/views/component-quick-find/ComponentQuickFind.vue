@@ -87,6 +87,9 @@
                     <data-stream-generate-read></data-stream-generate-read>
                 </el-tab-pane>
 
+                <el-tab-pane label="webSocket一对一随机聊天框" name="RandomChatBox">
+                    <random-chat-box></random-chat-box>
+                </el-tab-pane>
             </el-tabs>
         </div>
 
@@ -108,14 +111,14 @@ import DataFlat from './components/DataFlat.vue'
 import ResponsiveLayoutReference from './components/ResponsiveLayoutReference.vue'
 import VideoStreamRead from './components/VideoStreamRead.vue'
 import DataStreamGenerateRead from './components/DataStreamGenerateRead.vue'
-
+import RandomChatBox from './components/RandomChatBox.vue'
 
 //默认折叠
 const shrinkOrNot = ref(false)
 const navList = ref([])
 const firstLoad = ref(true)
 const selectItem = ref()
-const activeName = ref('VideoStreamRead')
+const activeName = ref('RandomChatBox')
 
 //生成随机导航数组  并排序 去重
 const getRandomDataList=()=>{

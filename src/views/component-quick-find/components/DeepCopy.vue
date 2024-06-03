@@ -8,9 +8,6 @@
           <textarea  v-model="inputObj" :placeholder="inputPlaceholder" @blur="returnResut">
           </textarea>
   
-
-        
-  
           <textarea disabled v-model="outputObj" :placeholder="outputPlaceholder">
           </textarea>
   
@@ -172,19 +169,5 @@ const loopBody = function(obj){
 }
 
 
-// .handleBox{
-//   display:flex;
-//   flex-direction: row;
-//   justify-content: center;
-//   textarea{
-//     margin-left: 10px;
-//   }
-// }
-
-// .example{
-//   margin: 10px;
-//   color:red
-
-// }
 
 </style>

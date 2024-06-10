@@ -13,14 +13,21 @@ vue + elementPlus
     (3)配置CSS压缩抽取
     (4)引入 vue-loader ,处理单文件组件
     (5)删除打包文件中的源码：productionSourceMap: false,    
+    (6)修改打包配置，减少单文件体积，增快打包速度
     参考官网:https://www.webpackjs.com/loaders/
             https://cli.vuejs.org/zh/guide/
             https://vue-loader.vuejs.org/zh/
+            
+
+>npm run production-inspect       #打包配置参考
+>
+>npm run development-inspect   #开发配置参考
 
 ## 3. package.js中的 dependencies 和 devDependencies 的区别
-   (1)"dependencies"   
 
-​      项目运行所在环境
+   (1)"dependencies"   
+     
+      dependencies中列出的包将在生产和开发环境中都使用。
 
 ​       包下载命令:
 
@@ -29,6 +36,9 @@ vue + elementPlus
 ​            npm  install xxx
 
    (2)"devDependencies"
+
+      devDependencies中列出的包仅在开发环境中使用。
+
 
 ​      项目打包所在环境 ————并且安装包不会打包到最终产物中(不确定)
 

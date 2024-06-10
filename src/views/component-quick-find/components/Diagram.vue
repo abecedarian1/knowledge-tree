@@ -8,7 +8,8 @@
 
 <script  setup>
     import {ref,onMounted,reactive,onBeforeUnmount} from 'vue'
-    import * as echarts from 'echarts';
+    // import * as echarts from 'echarts';
+    import { init } from 'echarts';
 
     // const dataList = ref([5, 20, 36, 10, 8, 20])
     const dataList = reactive([5, 20, 36, 10, 8, 20])
@@ -64,7 +65,8 @@
     onMounted(()=>{
         const main =  echartsShow.value
         // 基于准备好的dom，初始化echarts实例
-        myChart.value = echarts.init(main);
+        // myChart.value = echarts.init(main);
+        myChart.value = init(main);
         // 绘制图表
         myChart.value.setOption({
             title: {

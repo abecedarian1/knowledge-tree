@@ -219,20 +219,21 @@ $content-height:calc(100vh - $topBarHeight - $userBarHeight - $footerHeight);
             width: 100%; /* 覆盖组件默认的宽度计算 */
             min-height:100%;  /*继承父元素高度*/
             
-            ::v-deep .el-tabs__header{
-                height: unset !important;  /*取消tab的默认的高度100%，跟随flex布局自适应*/
-            }
-          
-            /* 和 nav-bar模块 侧边栏的高度有关 */
-            ::v-deep .el-tabs__content{
-                position: relative;
-                padding: 0;
-                flex-grow: 1;
-                /* 每个tab页面的内容 */
-                .el-tab-pane{
+            :deep() {
+                .el-tabs__header{
+                    height: unset !important;  /*取消tab的默认的高度100%，跟随flex布局自适应*/
+                }
+                /* 和 nav-bar模块 侧边栏的高度有关 */
+                .el-tabs__content{
                     position: relative;
-                    height: 100%;
                     padding: 0;
+                    flex-grow: 1;
+                    /* 每个tab页面的内容 */
+                    .el-tab-pane{
+                        position: relative;
+                        height: 100%;
+                        padding: 0;
+                    }
                 }
             }
         }
@@ -250,8 +251,11 @@ $content-height:calc(100vh - $topBarHeight - $userBarHeight - $footerHeight);
         
     }
      /* 修改tab背景色 */
-    .el-tabs ::v-deep .el-tabs__header.is-left {
-        background-color: #fbedf7;
+    .el-tabs {
+        :deep() {
+            .el-tabs__header.is-left {
+                background-color: #fbedf7;
+            }
+        }
     }
-
 </style>

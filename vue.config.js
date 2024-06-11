@@ -86,12 +86,13 @@ module.exports = {
 
             // 这个在默认情况下只会影响到按需加载的内容。。。。
             let splitChunks =  config.optimization.splitChunks
-            // 按需加载时候最大的并行请求数
-            splitChunks.maxAsyncRequests = 5
-            // 最大初始化请求数
-            splitChunks.maxInitialRequests = 3
-            // 形成一个新代码块的最小体积
-            splitChunks.minSize = 30000
+           
+            // // 按需加载时候最大的并行请求数
+            // splitChunks.maxAsyncRequests = 5
+            // // 最大初始化请求数
+            // splitChunks.maxInitialRequests = 3
+            // // 形成一个新代码块的最小体积
+            // splitChunks.minSize = 30000
 
 
             //确保最后提取的文件大小不能为0--类似于minSize
@@ -102,24 +103,24 @@ module.exports = {
             splitChunks.automaticNameDelimiter = '~'            
             let chunkRule = {
                 // 是否可以把它使用统一变量进行模块拆分
-                echarts:{
-                    name: 'echarts',
-                    test: /[\\/]node_modules[\\/](echarts)[\\/]/, //正则匹配要拆分的模块
-                    priority: 10,
-                    chunks: 'all',
-                },
+                // echarts:{
+                //     name: 'echarts',
+                //     test: /[\\/]node_modules[\\/](echarts)[\\/]/, //正则匹配要拆分的模块
+                //     priority: 10,
+                //     chunks: 'all',
+                // },
                 tinymce:{
                     name: 'tinymce',
                     test: /[\\/]node_modules[\\/](tinymce)[\\/]/, //正则匹配要拆分的模块
                     priority: 15,
                     chunks: 'all',
                 },
-                elementPlus:{
-                    name: 'element-plus',
-                    test: /[\\/]node_modules[\\/](element-plus)[\\/]/, //正则匹配要拆分的模块
-                    priority: 20,
-                    chunks: 'all',
-                },
+                // elementPlus:{
+                //     name: 'element-plus',
+                //     test: /[\\/]node_modules[\\/](element-plus)[\\/]/, //正则匹配要拆分的模块
+                //     priority: 20,
+                //     chunks: 'all',
+                // },                
             }
             Object.assign(splitChunks.cacheGroups,chunkRule)
         }

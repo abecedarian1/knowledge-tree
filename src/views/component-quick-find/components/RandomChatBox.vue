@@ -105,8 +105,10 @@ const closeWebsocket = ()=>{
         display: flow-root;
         ul {
             border-bottom: solid 1px;
-            ::v-deep li{
-                padding: 10px 5px;
+            :deep() {
+                li{
+                    padding: 10px 5px;
+                }
             }
         }
     }

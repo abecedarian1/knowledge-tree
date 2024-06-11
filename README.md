@@ -13,7 +13,7 @@ vue + elementPlus
     (3)配置CSS压缩抽取
     (4)引入 vue-loader ,处理单文件组件
     (5)删除打包文件中的源码：productionSourceMap: false,    
-    (6)修改打包配置，减少单文件体积，增快打包速度
+    (6)修改打包配置，减少单文件体积，增快打包速度--可以同时拆分js和css
     参考官网:https://www.webpackjs.com/loaders/
             https://cli.vuejs.org/zh/guide/
             https://vue-loader.vuejs.org/zh/

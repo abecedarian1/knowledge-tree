@@ -8,7 +8,6 @@
     "build": "vue-cli-service build --mode production",
     "production-inspect": "vue-cli-service inspect --mode production > productionConfig.js",
     "development-inspect": "vue-cli-service inspect --mode development > developmentConfig.js"
-    
   },
   "dependencies": {
     "@tinymce/tinymce-vue": "^4.0.7",

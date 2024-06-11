@@ -110,15 +110,20 @@ import "tinymce/plugins/lists"
 import "tinymce/plugins/wordcount"
 import "tinymce/plugins/codesample"
 
+import zhLangs from "@/assets/markdown/zh-Hans.js"
+import skinUrl from "@/assets/markdown/skins/ui/oxide/skin.css"
+import contentCss from "@/assets/markdown/skins/content/default/content.css"
 
 const tinymceHtml = ref("请输入内容");
 
 const init = {
 
+    //样式引入还需要再研究一下
     // 初始化数据
-    language_url:"/langs/zh-Hans.js", //引入语言包（在public下）
+    language_url:zhLangs, //引入语言包
     language:"zh-Hans", //这里名称根据 zh-Hans.js里面写的名称而定
-    skin_url:"/skins/ui/oxide", //这里引入的样式
+    // skin_url:"/skins/ui/oxide", //这里引入的样式 //???? //node_modules/tinymce/skins下的内容
+    skin_url:skinUrl, //这里引入的样式 //???? //node_modules/tinymce/skins下的内容
     // height:500,  //限制高度
     height:450,  //限制高度
     plugins:"links lists image code table wordcount codesample",  //富文本插件
@@ -126,8 +131,7 @@ const init = {
     branding:false,  // // 是否禁用 Powered by TiinyMCE
     menubar:true,  //顶部菜单栏显示
     // paste_convert_word_fake_lists:false, //插入word文档需要该属性
-    content_css:"/skins/content/default/content.css", //以css文件方式自定义可编辑区域的css样式，css文件将自己创建并引入
-   
+    content_css:contentCss, //以css文件方式自定义可编辑区域的css样式，css文件将自己创建并引入  //node_modules/tinymce下的内容？？？
     selector:'#tinydemo',
 
 

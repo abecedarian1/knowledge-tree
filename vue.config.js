@@ -72,8 +72,6 @@ module.exports = {
                     //         'css-loader',
                     //     ]
                     // }
-
-
                 ]
             })
             config.plugins.push(
@@ -101,9 +99,7 @@ module.exports = {
              //达到该体积后就需要拆分
             // splitChunks.enforceSizeThreshold=300000;
             // 打包分割符
-            splitChunks.automaticNameDelimiter = '~'
-
-            // 添加新数据怎么添加
+            splitChunks.automaticNameDelimiter = '~'            
             let chunkRule = {
                 // 是否可以把它使用统一变量进行模块拆分
                 echarts:{
@@ -118,24 +114,14 @@ module.exports = {
                     priority: 15,
                     chunks: 'all',
                 },
-
-                tinymce:{
+                elementPlus:{
                     name: 'element-plus',
                     test: /[\\/]node_modules[\\/](element-plus)[\\/]/, //正则匹配要拆分的模块
                     priority: 20,
                     chunks: 'all',
                 },
-
-
             }
-
             Object.assign(splitChunks.cacheGroups,chunkRule)
-           
-
-
-           
-
-
         }
     },
 }

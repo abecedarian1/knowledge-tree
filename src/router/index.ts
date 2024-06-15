@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory,createWebHistory, RouteRecordRaw } from 'vue-router'
+import { createRouter,createWebHistory, RouteRecordRaw } from 'vue-router'
 import baseService from "@/axios/baseService"
 
 // 
@@ -130,8 +130,7 @@ const routes: Array<RouteRecordRaw> = [
 ]
 
 const router = createRouter({
-  history: createWebHashHistory(),
-  // history: createWebHistory(),
+  history: createWebHistory(),
   routes
 })
 

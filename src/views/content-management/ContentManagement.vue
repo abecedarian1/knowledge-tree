@@ -2,7 +2,7 @@
     <div> 
 
         <div class="user_bar">
-            <a style="text-decoration: none;color:#335f5b;margin-left: 20px;float: left;" href="#">
+            <a style="text-decoration: none;color:#335f5b;margin-left: 20px;float: left;" href="/">
                 返回
             </a>
             <div><a style="font-size:30px;font-weight: bolder;">内容管理</a></div>

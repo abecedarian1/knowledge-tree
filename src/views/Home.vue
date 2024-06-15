@@ -25,23 +25,16 @@
 <script lang="ts" setup>
 import { defineComponent,reactive,onMounted,onActivated } from 'vue';
 import baseService from '../axios/baseService'
+import {useRoute} from 'vue-router'
 
 name: 'HomeView';
-component:{
-};
 
+const route = useRoute()
 
 const categroyList = reactive([])
 
 onMounted(()=>{ 
-    baseService.get('/getKnowledgeCategory').then((res)=>{
-    // console.log('返回的数据信息',res.data)
-        let list = res.data
-        list.forEach(item => {
-            item.url = item.url+"?mainId="+item.id
-        });
-        Object.assign(categroyList,res.data)
-    })
+  Object.assign(categroyList,route.query.list)
 })
 
 </script>

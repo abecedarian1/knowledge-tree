@@ -68,28 +68,21 @@ const selectOption = (id)=>{
 }
 
 onMounted(()=>{
+    // console.log('加载到的数据',route)
+    //从路由独享守卫传过来的
     // 通过id调用查询接口
-    let parentUrl = ''
+    let parentUrl = route.query.parentUrl
     let mainId = route.query.mainId
-
-    // 上级路由
-    baseService.get('/getKnowledgeCategory?id='+mainId).then(async(res)=>{
-        titleName.value = res.data[0].name
-        parentUrl = res.data[0].url
-
-        // 当前内容列表
-        await baseService.get('/modelList?parentId='+mainId).then((res)=>{
-            let list  = res.data
-            list.forEach(item => {
-                item.url = '/'+parentUrl+'/'+item.url+'?mainId='+mainId+'&branchId='+item.id
-            });
-            Object.assign(sideBarList,list)  
-        })
-      
-    })   
+    titleName.value = route.query.title
+    // 当前内容列表
+        baseService.get('/modelList?parentId='+mainId).then((res)=>{
+        let list  = res.data
+        list.forEach(item => {
+            item.url = '/'+parentUrl+'/'+item.url+'?mainId='+mainId+'&branchId='+item.id
+        });
+        Object.assign(sideBarList,list)  
+    })
 })
-
-
 
 
 </script>

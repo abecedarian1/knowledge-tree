@@ -96,7 +96,7 @@
                         <virtual-list :items="items" :lineSize="lineSize" :showNumber="showNumber"></virtual-list>
                     </div>
                     <div class="virtual-option" style="margin-left: 20px;text-align: left">
-                        <div>获取的数据总条数<input @input="limitMaxLength(totalDataLength)" v-model="totalDataLength" type="number" max="1000000" ></div>
+                        <div>获取的数据总条数<input @blur="limitMaxLength(totalDataLength)" v-model="totalDataLength" type="number" max="1000000" ></div>
                         <div>每次展示的数据条数<input v-model="showNumber" type="text" ></div>
                         <div>每行数据的高度<input  v-model="lineSize" type="text" ></div>
                     </div>
@@ -108,7 +108,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref,watch,computed } from "vue";
+import { ref,watch,computed,onMounted } from "vue";
 import TimeSelectLimit from './components/TimeSelectLimit.vue'
 import Diagram from './components/Diagram.vue'
 import ToDoList from './components/ToDoList.vue'
@@ -212,27 +212,80 @@ const emitTimeData =(val)=>{
 const showNumber = ref(10)
 const lineSize = ref(40)
 const totalDataLength = ref(100)
+const items = ref([])
+
 
 //模拟数据 
-//最多1000000条，再多就奔溃了---  question
-//可能要时间换空间，或者数据分段存储--边展示边加载
-const items = computed(() => {
+//最多极限10000000(1千万)条，再多就奔溃了，CPU耗尽---  question
+//添加的过程中，数据不能滚动（控制台数据一直在跑），但看不了，跑完才能看，？？？其他办法？？  ---  question
+//可能要时间换空间，或者数据分段存储--边展示边加载--？？？
+const limitMaxLength=(val)=>{
+    let newVal = val
+    if(val>10000000){
+        totalDataLength.value = 10000000
+        newVal = 10000000
+    }  
+    
+    
+    // 添加条件判断：
+    // 分段读取
+    let arr = Array()
+    let remainArr = Array()
+
+    console.log('newVal',newVal)
+    items.value = []
+
+    //数据的添加不能放在这里，应该放在滚动的时候添加---这里也卡
+    if(newVal>10000){
+        let count = Math.floor(newVal / 10000)
+        let remain = newVal - count * 10000
+
+        arr.length = 10000
+        remainArr.length = remain
+    
+        //怎么做成跑完一个再一个？？？？，而且数据要累增加，而且不影响浏览
+        // 不能边浏览边缓存
+        for(let i=0;i<count;i++){
+            let listBranch = arr.fill('').map((item,index)=>({
+                id:index + i*10000,
+                content:'列表数据内容'+(index + i*10000)
+            }))
+            items.value.push(...listBranch)
+            console.log('累计加载次数',count,'当前次数',i)
+        }
+
+        if(remain){
+            let remainBranh  = remainArr.fill('').map((item,index)=>({
+                id:index + count*10000,
+                content:'列表数据内容'+(index + count*10000)
+            }))
+            items.value.push(...remainBranh)
+        }
+
+
+    }else{
+        
+        arr.length = newVal
+        items.value = arr.fill('').map((item,index)=>({
+            id:index,
+            content:'列表数据内容'+index
+        }))
+    }
+  
+}
+
+
+//加载初始默认数据
+ onMounted(()=>{
     let arr = Array()
     arr.length = totalDataLength.value
-
-    return arr.fill('').map((item,index)=>({
+    items.value = arr.fill('').map((item,index)=>({
         id:index,
         content:'列表数据内容'+index
     }))
-})
+ })
 
-const limitMaxLength=(val)=>{
-    if(val>1000000){
-        totalDataLength.value = 1000000
-    }
-}
 
- 
 </script>
 
 <style scoped lang="scss">

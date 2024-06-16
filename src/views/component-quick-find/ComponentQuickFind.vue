@@ -90,6 +90,17 @@
                 <el-tab-pane label="webSocket一对一随机聊天框" name="RandomChatBox">
                     <random-chat-box></random-chat-box>
                 </el-tab-pane>
+
+                <el-tab-pane label="虚拟列表" name="VirtualList" style="display: flex;">
+                    <div style="width: 500px;">
+                        <virtual-list :items="items" :lineSize="lineSize" :showNumber="showNumber"></virtual-list>
+                    </div>
+                    <div class="virtual-option" style="margin-left: 20px;text-align: left">
+                        <div>获取的数据总条数<input @input="limitMaxLength(totalDataLength)" v-model="totalDataLength" type="number" max="1000000" ></div>
+                        <div>每次展示的数据条数<input v-model="showNumber" type="text" ></div>
+                        <div>每行数据的高度<input  v-model="lineSize" type="text" ></div>
+                    </div>
+                </el-tab-pane>
             </el-tabs>
         </div>
 
@@ -97,7 +108,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref,watch } from "vue";
+import { ref,watch,computed } from "vue";
 import TimeSelectLimit from './components/TimeSelectLimit.vue'
 import Diagram from './components/Diagram.vue'
 import ToDoList from './components/ToDoList.vue'
@@ -112,13 +123,18 @@ import ResponsiveLayoutReference from './components/ResponsiveLayoutReference.vu
 import VideoStreamRead from './components/VideoStreamRead.vue'
 import DataStreamGenerateRead from './components/DataStreamGenerateRead.vue'
 import RandomChatBox from './components/RandomChatBox.vue'
+import VirtualList from './components/VirtualList.vue'
 
+
+/**
+ * 侧边栏SideBar
+*/
 //默认折叠
 const shrinkOrNot = ref(false)
 const navList = ref([])
 const firstLoad = ref(true)
 const selectItem = ref()
-const activeName = ref('RandomChatBox')
+const activeName = ref('VirtualList')
 
 //生成随机导航数组  并排序 去重
 const getRandomDataList=()=>{
@@ -168,6 +184,9 @@ watch(shrinkOrNot,(oldVal,newVal)=>{
 })
 
 
+/**
+ * 时间选择器
+*/
 const emitTimeData =(val)=>{
     // 子组件传递过来的数据 val
     // console.log('emit------',val)
@@ -180,6 +199,39 @@ const emitTimeData =(val)=>{
     }
 
 }
+
+
+
+
+/**
+ * 虚拟列表
+ * */
+//items:要进行渲染的列表数据
+//lineSize:每条数据的高度
+//showNumber:每次渲染的数据条数(DOM个数)
+const showNumber = ref(10)
+const lineSize = ref(40)
+const totalDataLength = ref(100)
+
+//模拟数据 
+//最多1000000条，再多就奔溃了---  question
+//可能要时间换空间，或者数据分段存储--边展示边加载
+const items = computed(() => {
+    let arr = Array()
+    arr.length = totalDataLength.value
+
+    return arr.fill('').map((item,index)=>({
+        id:index,
+        content:'列表数据内容'+index
+    }))
+})
+
+const limitMaxLength=(val)=>{
+    if(val>1000000){
+        totalDataLength.value = 1000
+    }
+}
+
  
 </script>
 

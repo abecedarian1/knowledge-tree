@@ -228,7 +228,7 @@ const items = computed(() => {
 
 const limitMaxLength=(val)=>{
     if(val>1000000){
-        totalDataLength.value = 1000
+        totalDataLength.value = 1000000
     }
 }
 

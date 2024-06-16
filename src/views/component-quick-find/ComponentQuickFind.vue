@@ -219,7 +219,8 @@ const items = ref([])
 //最多极限10000000(1千万)条，再多就奔溃了，CPU耗尽---  question
 //添加的过程中，数据不能滚动（控制台数据一直在跑），但看不了，跑完才能看，？？？其他办法？？  ---  question
 //可能要时间换空间，或者数据分段存储--边展示边加载--？？？
-const limitMaxLength=(val)=>{
+//获取数据条数调整后，需要停止之前数据的渲染，重新开始新的渲染----需要flag判断  ——————question
+ const limitMaxLength=(val)=>{
     let newVal = val
     if(val>10000000){
         totalDataLength.value = 10000000
@@ -235,7 +236,7 @@ const limitMaxLength=(val)=>{
     console.log('newVal',newVal)
     items.value = []
 
-    //数据的添加不能放在这里，应该放在滚动的时候添加---这里也卡
+    //数据的添加不能放在这里，应该放在滚动的时候添加---这里也卡 -----question
     if(newVal>10000){
         let count = Math.floor(newVal / 10000)
         let remain = newVal - count * 10000

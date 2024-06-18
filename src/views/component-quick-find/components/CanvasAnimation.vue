@@ -102,7 +102,7 @@ onMounted(()=>{
 
 </script>
 
-<style>
+<style scoped>
     #canvas1{
         background-color: beige;
     }

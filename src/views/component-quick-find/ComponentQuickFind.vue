@@ -101,6 +101,10 @@
                         <div>每行数据的高度<input  v-model="lineSize" type="text" ></div>
                     </div>
                 </el-tab-pane>
+
+                <el-tab-pane label="Canvas画布拖拽缩放" name="CanvasRender">
+                    <canvas-render></canvas-render>
+                </el-tab-pane>
             </el-tabs>
         </div>
 
@@ -109,6 +113,7 @@
 
 <script lang="ts" setup>
 import { ref,watch,computed,onMounted } from "vue";
+
 import TimeSelectLimit from './components/TimeSelectLimit.vue'
 import Diagram from './components/Diagram.vue'
 import ToDoList from './components/ToDoList.vue'
@@ -124,6 +129,7 @@ import VideoStreamRead from './components/VideoStreamRead.vue'
 import DataStreamGenerateRead from './components/DataStreamGenerateRead.vue'
 import RandomChatBox from './components/RandomChatBox.vue'
 import VirtualList from './components/VirtualList.vue'
+import CanvasRender from './components/CanvasRender.vue'
 
 
 /**
@@ -134,7 +140,7 @@ const shrinkOrNot = ref(false)
 const navList = ref([])
 const firstLoad = ref(true)
 const selectItem = ref()
-const activeName = ref('VirtualList')
+const activeName = ref('CanvasRender')
 
 //生成随机导航数组  并排序 去重
 const getRandomDataList=()=>{

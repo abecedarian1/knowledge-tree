@@ -4,7 +4,7 @@
             @mousedown="canvasMousedown" 
             @mouseup="canvasMouseup"
             @mousemove="canvasMousemove"
-            @wheel="canvasScroll" id="canvas2" width="600px" height="400px">
+            @wheel="canvasScroll" id="canvas2" :width="defaultWidth" :height="defaultHeight">
             当前浏览器不支持canvas，请下载最新的浏览器
             <a href="https://www.google.cn/intl/zh-CN/chrome">立即下载</a>
         </canvas>
@@ -22,10 +22,12 @@ const canvasCxt = ref()
 const imgObj = ref()
 const startX = ref(0)
 const startY = ref(0)
-const imgWidth = ref(600)
-const imgHeight = ref(400)
-const defaultWidth = 600
-const defaultHeight = 400
+//画布的默认宽高
+const defaultWidth = 800
+const defaultHeight = 600
+//图片的初始宽高 --保持为画布的默认宽高，保证图片占满全屏且避免一些初始临界bug
+const imgWidth = ref(defaultWidth)
+const imgHeight = ref(defaultHeight)
 
 //图像的移动
 const moveStartX = ref(0)
@@ -46,6 +48,7 @@ const canvasVergeHandle=()=>{
     if (startY.value + imgHeight.value < defaultHeight) startY.value = defaultHeight - imgHeight.value
 }
 
+//缩小不回来了
 const canvasScroll=(e)=>{
     // 取消事件对当前元素的默认影响---取消原有的外层滚动
     e.preventDefault()
@@ -63,7 +66,8 @@ const canvasScroll=(e)=>{
         // 需要理解一下  question
         startX.value -= (x-startX.value)*(scale-1)
         startY.value -= (y-startY.value) *(scale-1)
-    }else{
+    }else if(wheelDeltaY < 0){
+
         if((imgWidth.value/scale)>=defaultWidth && 
             (imgHeight.value/scale)>defaultHeight 
         ){
@@ -73,14 +77,20 @@ const canvasScroll=(e)=>{
             //需要理解一下   question
             startX.value += (x-startX.value) *(1-1/scale)
             startY.value += (y-startY.value) * (1-1/scale)
+        }else{
+            //处理缩不回来的情况
+            imgWidth.value = defaultWidth
+            imgHeight.value = defaultHeight
+            startX.value = 0
+            startY.value = 0
         }
     }
     //处理边界
     canvasVergeHandle()
     //清除画布并重绘制
-    canvasCxt.value.clearRect(0,0,600,400)
+    canvasCxt.value.clearRect(0,0,defaultWidth,defaultHeight)
     // 使用裁切的方式进行缩放————对于大型图，这种效果可能会更好一点（不确定）---缩放和下面的方式相反
-    // canvasCxt.value.drawImage(imgObj.value,startX.value,startY.value,imgWidth.value,imgHeight.value,0,0,600,400)
+    // canvasCxt.value.drawImage(imgObj.value,startX.value,startY.value,imgWidth.value,imgHeight.value,0,0,defaultWidth,defaultHeight)
     //使用全图进行缩放
     canvasCxt.value.drawImage(imgObj.value,startX.value,startY.value,imgWidth.value,imgHeight.value)
 }
@@ -115,7 +125,7 @@ const canvasMousemove=(e)=>{
             //处理边界
             canvasVergeHandle()
             //清除画布并重新渲染
-            canvasCxt.value.clearRect(0,0,600,400)
+            canvasCxt.value.clearRect(0,0,defaultWidth,defaultHeight)
             canvasCxt.value.drawImage(imgObj.value,startX.value,startY.value,imgWidth.value,imgHeight.value)
             //计时器结束后，重新计算鼠标开始点
             moveStartX.value = e.offsetX
@@ -137,7 +147,7 @@ onMounted(()=>{
     imgObj.value.src = canvasDemoJpg
     imgObj.value.onload = function(){
         //参考链接：https://developer.mozilla.org/zh-CN/docs/Web/API/Canvas_API/Tutorial/Using_images
-        canvasCxt.value.drawImage(imgObj.value,0,0,600,400)   
+        canvasCxt.value.drawImage(imgObj.value,0,0,defaultWidth,defaultHeight)   
     }
 })
 

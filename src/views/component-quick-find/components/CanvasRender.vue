@@ -1,5 +1,14 @@
 <template>
     <div>
+        <div class="save">
+            <div  @click="savePic"><button>保存图片</button></div>
+            <div  @click="exportPic = ''" v-if="exportPic"><a :href="exportPic" download="canvas.png">点击下载图片</a></div>
+        </div>
+        <div class="toolBar">
+            <span @click="drawShape = 'move' " :class="drawShape=='move' ? 'draw-shape' : '' ">移动 +</span>
+            <span @click="drawShape = 'rect' " :class="drawShape=='rect' ? 'draw-shape' : '' ">矩形◻</span>
+            <span @click="drawShape = 'line' "  :class="drawShape=='line' ? 'draw-shape' : '' ">直线 /</span>
+        </div>
         <canvas ref="canvas2" 
             @mousedown="canvasMousedown" 
             @mouseup="canvasMouseup"
@@ -12,30 +21,45 @@
 </template>
 
 <script setup>
-import {ref,onMounted} from 'vue'
+import {ref,onMounted,reactive} from 'vue'
 import canvasDemoJpg from '@/assets/images/canvas-demo.jpg'
 
+//画布内容
 const canvas2 = ref()
-//画布操作区
 const canvasCxt = ref()
-//创建的img对象
-const imgObj = ref()
+//元素在画布中渲染的起始点
 const startX = ref(0)
 const startY = ref(0)
 //画布的默认宽高
 const defaultWidth = 800
 const defaultHeight = 600
+//创建的img对象
+const imgObj = ref()
 //图片的初始宽高 --保持为画布的默认宽高，保证图片占满全屏且避免一些初始临界bug
+// 也可以当作当前画布已经放大到多少倍的参照物
 const imgWidth = ref(defaultWidth)
 const imgHeight = ref(defaultHeight)
-
-//图像的移动
+//图像的拖拽移动--也可以当作画布的拖拽移动
+const startDrag = ref(false)
 const moveStartX = ref(0)
 const moveStartY = ref(0)
 const moveEndX = ref(0)
 const moveEndY = ref(0)
-const startDrag = ref(false)
 
+//保存的图片
+const exportPic = ref()
+
+
+//是否开始画图的判断
+const startDraw = ref(false)
+// 当前画图形状
+const drawShape = ref('move')
+//初始化形状样式属性
+const initDrawOption = reactive({
+    fillStyle:'white',
+    strokeStyle:'white',
+    lineWidth:2
+})
 
 //图片边界处理
 const canvasVergeHandle=()=>{
@@ -48,7 +72,7 @@ const canvasVergeHandle=()=>{
     if (startY.value + imgHeight.value < defaultHeight) startY.value = defaultHeight - imgHeight.value
 }
 
-//缩小不回来了
+//图像缩放
 const canvasScroll=(e)=>{
     // 取消事件对当前元素的默认影响---取消原有的外层滚动
     e.preventDefault()
@@ -95,18 +119,29 @@ const canvasScroll=(e)=>{
     canvasCxt.value.drawImage(imgObj.value,startX.value,startY.value,imgWidth.value,imgHeight.value)
 }
 
-
 //鼠标按下时触发
 const canvasMousedown=(e)=>{
     //记录起始点
     moveStartX.value = e.offsetX
     moveStartY.value = e.offsetY
-    startDrag.value = true
+    if(drawShape.value == 'move'){
+        //开始拖拽
+        startDrag.value = true
+    }else{
+        //开始画图
+        startDraw.value = true
+    }
 }
 
 //鼠标抬起时触发
 const canvasMouseup=(e)=>{
-    startDrag.value = false
+    if(drawShape.value == 'move'){
+        //拖拽结束
+        startDrag.value = false
+    }else{
+        //画图结束
+        startDraw.value = false
+    }
 }
 
 //鼠标移动过程中动态监听
@@ -133,9 +168,52 @@ const canvasMousemove=(e)=>{
             //清除定时器
             clearTimeout(timer)
         },5)
+
+
+    //开始画画
+    }else if(startDraw.value){
+        //画图
+        //渲染正在画的图的同时，还要渲染原有的内容
+
+        timer = setTimeout(()=>{
+            //鼠标结束点
+            moveEndX.value = e.offsetX
+            moveEndY.value = e.offsetY
+            //计算移动的距离
+            let xVariance = moveEndX.value - moveStartX.value
+            let yVariance = moveEndY.value - moveStartY.value
+            
+            //清除画布并重新渲染
+            canvasCxt.value.clearRect(0,0,defaultWidth,defaultHeight)
+            canvasCxt.value.drawImage(imgObj.value,startX.value,startY.value,imgWidth.value,imgHeight.value)
+            
+            //画矩形
+            if(drawShape.value=='rect'){
+                canvasCxt.value.beginPath()
+                canvasCxt.value.strokeRect(moveStartX.value,moveStartY.value, xVariance, yVariance);
+            //画直线
+            }else if(drawShape.value == 'line'){
+                canvasCxt.value.beginPath()
+                canvasCxt.value.moveTo(moveStartX.value,moveStartY.value)
+                canvasCxt.value.lineTo(moveEndX.value,moveEndY.value);
+                canvasCxt.value.stroke()
+            }
+            //清除定时器
+            clearTimeout(timer)
+        },5)
     }
 }
 
+const savePic=()=>{
+    // 下面两种方法都可以
+    // exportPic.value =  canvas2.value.toDataURL('image/png')
+    canvas2.value.toBlob((blob)=>{
+        let url = URL.createObjectURL(blob)
+        exportPic.value = url
+    })
+    //blob的value出不来
+    // console.log('生成的图片',exportPic)
+}
 
 onMounted(()=>{
     if(!canvas2.value.getContext){
@@ -143,6 +221,11 @@ onMounted(()=>{
         return
     }
     canvasCxt.value = canvas2.value.getContext('2d')
+    //初始化画图设置
+    canvasCxt.value.fillStyle = initDrawOption.fillStyle
+    canvasCxt.value.strokeStyle = initDrawOption.strokeStyle
+    canvasCxt.value.lineWidth = initDrawOption.lineWidth
+
     imgObj.value = new Image()
     imgObj.value.src = canvasDemoJpg
     imgObj.value.onload = function(){
@@ -155,11 +238,40 @@ onMounted(()=>{
 
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 
 #canvas2{
         background-color: beige;
-        margin:10px;
-    }
+}
 
+.draw-shape{
+    background-color: red;
+}
+
+.toolBar{
+    background-color: salmon;
+    width: 800px;
+    height: 40px;
+    font-size: 20px;
+    line-height: 40px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    
+    span{
+       padding:0 10px; 
+    }
+}
+
+.save{
+    width: 800px;
+    margin: 0 auto;
+    text-align: right;
+    font-size: 20px;
+    button{
+        font-size: 20px;
+        margin:5px 0;
+    }
+}
 </style>

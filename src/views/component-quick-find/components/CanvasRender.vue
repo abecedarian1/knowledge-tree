@@ -1,13 +1,15 @@
 <template>
     <div>
         <div class="save">
-            <div  @click="savePic"><button>保存图片</button></div>
-            <div  @click="exportPic = ''" v-if="exportPic"><a :href="exportPic" download="canvas.png">点击下载图片</a></div>
+            <div><button @click="savePic">保存图片</button></div>
+            <div v-if="exportPic"><a  @click="exportPic = ''" :href="exportPic" download="canvas.png">点击下载图片</a></div>
         </div>
         <div class="toolBar">
             <span @click="drawShape = 'move' " :class="drawShape=='move' ? 'draw-shape' : '' ">移动 +</span>
             <span @click="drawShape = 'rect' " :class="drawShape=='rect' ? 'draw-shape' : '' ">矩形◻</span>
             <span @click="drawShape = 'line' "  :class="drawShape=='line' ? 'draw-shape' : '' ">直线 /</span>
+            <span >撤销</span>
+            <span @click="clearCanvas">清空画布</span>
         </div>
         <canvas ref="canvas2" 
             @mousedown="canvasMousedown" 
@@ -23,7 +25,6 @@
 <script setup>
 import {ref,onMounted,reactive} from 'vue'
 import canvasDemoJpg from '@/assets/images/canvas-demo.jpg'
-
 //画布内容
 const canvas2 = ref()
 const canvasCxt = ref()
@@ -45,11 +46,11 @@ const moveStartX = ref(0)
 const moveStartY = ref(0)
 const moveEndX = ref(0)
 const moveEndY = ref(0)
-
+//画画或者拖拽过程中移动的距离（x,y）
+const xVariance = ref()
+const yVariance = ref()
 //保存的图片
 const exportPic = ref()
-
-
 //是否开始画图的判断
 const startDraw = ref(false)
 // 当前画图形状
@@ -60,6 +61,9 @@ const initDrawOption = reactive({
     strokeStyle:'white',
     lineWidth:2
 })
+//保存的画图记录------如果用到撤销的话，这里可能是一个数组？
+const strokePaths = ref(new Path2D())
+
 
 //图片边界处理
 const canvasVergeHandle=()=>{
@@ -111,12 +115,8 @@ const canvasScroll=(e)=>{
     }
     //处理边界
     canvasVergeHandle()
-    //清除画布并重绘制
-    canvasCxt.value.clearRect(0,0,defaultWidth,defaultHeight)
-    // 使用裁切的方式进行缩放————对于大型图，这种效果可能会更好一点（不确定）---缩放和下面的方式相反
-    // canvasCxt.value.drawImage(imgObj.value,startX.value,startY.value,imgWidth.value,imgHeight.value,0,0,defaultWidth,defaultHeight)
-    //使用全图进行缩放
-    canvasCxt.value.drawImage(imgObj.value,startX.value,startY.value,imgWidth.value,imgHeight.value)
+    //重绘
+    redraw()
 }
 
 //鼠标按下时触发
@@ -141,6 +141,19 @@ const canvasMouseup=(e)=>{
     }else{
         //画图结束
         startDraw.value = false
+        if(drawShape.value == 'rect'){
+            //画完后，要把画的最终的内容进行记录
+            let rectangle = new Path2D()
+            rectangle.rect(moveStartX.value,moveStartY.value, xVariance.value, yVariance.value);
+            strokePaths.value.addPath(rectangle)
+        }else if(drawShape.value == 'line'){
+            let linePath = new Path2D()
+            linePath.moveTo(moveStartX.value,moveStartY.value)
+            linePath.lineTo(moveEndX.value,moveEndY.value);
+            strokePaths.value.addPath(linePath)
+        }
+        //重绘
+        redraw()
     }
 }
 
@@ -153,15 +166,14 @@ const canvasMousemove=(e)=>{
             moveEndX.value = e.offsetX
             moveEndY.value = e.offsetY
             //重新计算图片在画布中的起始位置
-            let xVariance = moveEndX.value - moveStartX.value
-            let yVariance = moveEndY.value - moveStartY.value
-            startX.value += xVariance
-            startY.value += yVariance 
+            xVariance.value = moveEndX.value - moveStartX.value
+            yVariance.value = moveEndY.value - moveStartY.value
+            startX.value += xVariance.value
+            startY.value += yVariance.value 
             //处理边界
             canvasVergeHandle()
-            //清除画布并重新渲染
-            canvasCxt.value.clearRect(0,0,defaultWidth,defaultHeight)
-            canvasCxt.value.drawImage(imgObj.value,startX.value,startY.value,imgWidth.value,imgHeight.value)
+            //重绘
+            redraw()
             //计时器结束后，重新计算鼠标开始点
             moveStartX.value = e.offsetX
             moveStartY.value = e.offsetY
@@ -180,18 +192,17 @@ const canvasMousemove=(e)=>{
             moveEndX.value = e.offsetX
             moveEndY.value = e.offsetY
             //计算移动的距离
-            let xVariance = moveEndX.value - moveStartX.value
-            let yVariance = moveEndY.value - moveStartY.value
-            
-            //清除画布并重新渲染
-            canvasCxt.value.clearRect(0,0,defaultWidth,defaultHeight)
-            canvasCxt.value.drawImage(imgObj.value,startX.value,startY.value,imgWidth.value,imgHeight.value)
-            
+            xVariance.value = moveEndX.value - moveStartX.value
+            yVariance.value = moveEndY.value - moveStartY.value
+            //重绘
+            redraw()
+
             //画矩形
             if(drawShape.value=='rect'){
                 canvasCxt.value.beginPath()
-                canvasCxt.value.strokeRect(moveStartX.value,moveStartY.value, xVariance, yVariance);
-            //画直线
+                canvasCxt.value.rect(moveStartX.value,moveStartY.value, xVariance.value, yVariance.value);
+                canvasCxt.value.stroke()
+                //画直线
             }else if(drawShape.value == 'line'){
                 canvasCxt.value.beginPath()
                 canvasCxt.value.moveTo(moveStartX.value,moveStartY.value)
@@ -213,6 +224,28 @@ const savePic=()=>{
     })
     //blob的value出不来
     // console.log('生成的图片',exportPic)
+}
+
+
+//更新画布--重绘
+const redraw = ()=>{
+    //清除画布
+    canvasCxt.value.clearRect(0,0,defaultWidth,defaultHeight)
+    //使用全图进行缩放
+    canvasCxt.value.drawImage(imgObj.value,startX.value,startY.value,imgWidth.value,imgHeight.value)
+    //重新绘制路径
+    canvasCxt.value.stroke(strokePaths.value)
+}
+
+
+//清空画布
+const clearCanvas=()=>{
+    //清除画布
+    canvasCxt.value.clearRect(0,0,defaultWidth,defaultHeight)
+    //使用全图进行缩放
+    canvasCxt.value.drawImage(imgObj.value,startX.value,startY.value,imgWidth.value,imgHeight.value)
+    //清空路径
+    strokePaths.value = new Path2D()
 }
 
 onMounted(()=>{

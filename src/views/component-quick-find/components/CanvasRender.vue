@@ -2,13 +2,17 @@
     <div>
         <div class="save">
             <div><button @click="savePic">保存图片</button></div>
-            <div v-if="exportPic"><a  @click="exportPic = ''" :href="exportPic" download="canvas.png">点击下载图片</a></div>
+            <div v-if="exportPic">
+                <a  @click="exportPic = ''" :href="exportPic" download="canvas.png">点击下载图片</a>
+                <a @click="exportPic = ''" style="font-size: 24px;color: red;padding-left: 5px;">X</a></div>
         </div>
         <div class="toolBar">
             <span @click="drawShape = 'move' " :class="drawShape=='move' ? 'draw-shape' : '' ">移动 +</span>
             <span @click="drawShape = 'rect' " :class="drawShape=='rect' ? 'draw-shape' : '' ">矩形◻</span>
             <span @click="drawShape = 'line' "  :class="drawShape=='line' ? 'draw-shape' : '' ">直线 /</span>
-            <span >撤销</span>
+            <span @click="drawShape = 'curve' "  :class="drawShape=='curve' ? 'draw-shape' : '' ">曲线 S</span>
+            <span @click="drawShape = 'eraser' "  :class="drawShape=='eraser' ? 'draw-shape' : '' ">橡皮擦</span>
+            <span @click="undo">撤销</span>
             <span @click="clearCanvas">清空画布</span>
         </div>
         <canvas ref="canvas2" 
@@ -57,13 +61,17 @@ const startDraw = ref(false)
 const drawShape = ref('move')
 //初始化形状样式属性
 const initDrawOption = reactive({
-    fillStyle:'white',
-    strokeStyle:'white',
+    fillStyle:'red',
+    strokeStyle:'blue',
     lineWidth:2
 })
-//保存的画图记录------如果用到撤销的话，这里可能是一个数组？
-const strokePaths = ref(new Path2D())
 
+
+//保存的画图记录
+const drawRecords = ref([])
+//保存的曲线路径
+const curvePath = ref(new Path2D())
+const eraserPath = ref(new Path2D())
 
 //图片边界处理
 const canvasVergeHandle=()=>{
@@ -141,19 +149,24 @@ const canvasMouseup=(e)=>{
     }else{
         //画图结束
         startDraw.value = false
-        if(drawShape.value == 'rect'){
-            //画完后，要把画的最终的内容进行记录
-            let rectangle = new Path2D()
-            rectangle.rect(moveStartX.value,moveStartY.value, xVariance.value, yVariance.value);
-            strokePaths.value.addPath(rectangle)
-        }else if(drawShape.value == 'line'){
-            let linePath = new Path2D()
-            linePath.moveTo(moveStartX.value,moveStartY.value)
-            linePath.lineTo(moveEndX.value,moveEndY.value);
-            strokePaths.value.addPath(linePath)
+        const record = {
+            shape: drawShape.value,
+            startX: moveStartX.value,
+            startY: moveStartY.value,
+            endX: moveEndX.value,
+            endY: moveEndY.value,
+            xVariance: xVariance.value,
+            yVariance: yVariance.value,
+            fillStyle: initDrawOption.fillStyle,
+            strokeStyle: initDrawOption.strokeStyle,
+            lineWidth: initDrawOption.lineWidth,
+            curvePath:curvePath.value || undefined,
+            eraserPath:eraserPath.value || undefined
         }
-        //重绘
-        redraw()
+        // 画完后，把画的最终的内容进行记录
+        drawRecords.value.push(record)
+        curvePath.value = new Path2D()
+        eraserPath.value = new Path2D()
     }
 }
 
@@ -186,7 +199,6 @@ const canvasMousemove=(e)=>{
     }else if(startDraw.value){
         //画图
         //渲染正在画的图的同时，还要渲染原有的内容
-
         timer = setTimeout(()=>{
             //鼠标结束点
             moveEndX.value = e.offsetX
@@ -196,25 +208,54 @@ const canvasMousemove=(e)=>{
             yVariance.value = moveEndY.value - moveStartY.value
             //重绘
             redraw()
-
             //画矩形
             if(drawShape.value=='rect'){
                 canvasCxt.value.beginPath()
                 canvasCxt.value.rect(moveStartX.value,moveStartY.value, xVariance.value, yVariance.value);
                 canvasCxt.value.stroke()
-                //画直线
+            //画直线
             }else if(drawShape.value == 'line'){
                 canvasCxt.value.beginPath()
                 canvasCxt.value.moveTo(moveStartX.value,moveStartY.value)
                 canvasCxt.value.lineTo(moveEndX.value,moveEndY.value);
                 canvasCxt.value.stroke()
+            //曲线
+            }else if(drawShape.value == 'curve'){
+                let curve = new Path2D()
+                curve.moveTo(moveStartX.value,moveStartY.value)
+                curve.lineTo(moveEndX.value,moveEndY.value)
+                curvePath.value.addPath(curve)    
+                //计时器结束后，重新计算鼠标开始点
+                moveStartX.value = e.offsetX
+                moveStartY.value = e.offsetY
+                //画曲线的过程需要展示
+                canvasCxt.value.stroke(curvePath.value)
+
+            //橡皮擦效果
+            }else if(drawShape.value == 'eraser'){
+                canvasCxt.value.globalCompositeOperation = 'destination-out'
+                let eraserCurve = new Path2D()
+                eraserCurve.arc(moveEndX.value,moveEndY.value,5,0,2*Math.PI)
+                eraserPath.value.addPath(eraserCurve)  
+                //涂抹过程展示
+                canvasCxt.value.fill(eraserPath.value)
+                canvasCxt.value.globalCompositeOperation = 'source-over'
             }
             //清除定时器
             clearTimeout(timer)
-        },5)
+        },10)
     }
 }
 
+
+// 撤销最后一次绘图操作
+const undo = () => {
+    drawRecords.value.pop()
+    redraw()
+}
+
+
+//保存图片
 const savePic=()=>{
     // 下面两种方法都可以
     // exportPic.value =  canvas2.value.toDataURL('image/png')
@@ -227,14 +268,37 @@ const savePic=()=>{
 }
 
 
-//更新画布--重绘
-const redraw = ()=>{
+// 更新画布--重绘
+const redraw = () => {
     //清除画布
-    canvasCxt.value.clearRect(0,0,defaultWidth,defaultHeight)
+    canvasCxt.value.clearRect(0, 0, defaultWidth, defaultHeight)
     //使用全图进行缩放
-    canvasCxt.value.drawImage(imgObj.value,startX.value,startY.value,imgWidth.value,imgHeight.value)
-    //重新绘制路径
-    canvasCxt.value.stroke(strokePaths.value)
+    canvasCxt.value.drawImage(imgObj.value, startX.value, startY.value, imgWidth.value, imgHeight.value)
+    
+    //重新绘制历史记录里边的内容
+    drawRecords.value.forEach(record => {
+        canvasCxt.value.fillStyle = record.fillStyle
+        canvasCxt.value.strokeStyle = record.strokeStyle
+        canvasCxt.value.lineWidth = record.lineWidth
+        if (record.shape === 'rect') {
+            canvasCxt.value.beginPath()
+            canvasCxt.value.rect(record.startX, record.startY, record.xVariance, record.yVariance)
+            canvasCxt.value.stroke()
+        } else if (record.shape === 'line') {
+            canvasCxt.value.beginPath()
+            canvasCxt.value.moveTo(record.startX, record.startY)
+            canvasCxt.value.lineTo(record.endX, record.endY)
+            canvasCxt.value.stroke()
+        } else if (record.shape === 'curve') {
+            canvasCxt.value.stroke(record.curvePath)
+
+        //这个还有问题？？？ question
+        } else if (record.shape === 'eraser') {
+            canvasCxt.value.globalCompositeOperation = 'destination-out'
+            canvasCxt.value.fill(record.eraserPath)
+            canvasCxt.value.globalCompositeOperation = 'source-over'
+        }
+    })
 }
 
 
@@ -244,8 +308,7 @@ const clearCanvas=()=>{
     canvasCxt.value.clearRect(0,0,defaultWidth,defaultHeight)
     //使用全图进行缩放
     canvasCxt.value.drawImage(imgObj.value,startX.value,startY.value,imgWidth.value,imgHeight.value)
-    //清空路径
-    strokePaths.value = new Path2D()
+    drawRecords.value = []
 }
 
 onMounted(()=>{
@@ -276,9 +339,24 @@ onMounted(()=>{
 #canvas2{
         background-color: beige;
 }
-
 .draw-shape{
-    background-color: red;
+    color:rgb(250, 227, 213);
+}
+
+.save{
+    width: 800px;
+    margin: 0 auto;
+    text-align: right;
+    font-size: 20px;
+    button{
+        font-size: 20px;
+        margin:5px 0;
+        background-color: rgb(223, 218, 209);
+    }
+
+    a:hover{
+        cursor: pointer;
+    }
 }
 
 .toolBar{
@@ -292,19 +370,14 @@ onMounted(()=>{
     flex-direction: row;
     justify-content: flex-start;
     
-    span{
+    &>span{
        padding:0 10px; 
+
+       &:hover{
+           color:rgb(250, 227, 213);
+           cursor:pointer;
+       }
     }
 }
 
-.save{
-    width: 800px;
-    margin: 0 auto;
-    text-align: right;
-    font-size: 20px;
-    button{
-        font-size: 20px;
-        margin:5px 0;
-    }
-}
 </style>

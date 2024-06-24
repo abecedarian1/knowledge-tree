@@ -29,6 +29,14 @@
 <script setup>
 import {ref,onMounted,reactive} from 'vue'
 import canvasDemoJpg from '@/assets/images/canvas-demo.jpg'
+/**
+ * 画布图层分层（绘制）管理还没搞定  ————应该是有一个函数
+ * 像素缩放还没搞定
+ * 
+*/
+
+
+
 //画布内容
 const canvas2 = ref()
 const canvasCxt = ref()
@@ -235,10 +243,14 @@ const canvasMousemove=(e)=>{
             }else if(drawShape.value == 'eraser'){
                 canvasCxt.value.globalCompositeOperation = 'destination-out'
                 let eraserCurve = new Path2D()
-                eraserCurve.arc(moveEndX.value,moveEndY.value,5,0,2*Math.PI)
-                eraserPath.value.addPath(eraserCurve)  
-                //涂抹过程展示
-                canvasCxt.value.fill(eraserPath.value)
+                eraserCurve.moveTo(moveStartX.value,moveStartY.value)
+                eraserCurve.lineTo(moveEndX.value,moveEndY.value)
+                eraserPath.value.addPath(eraserCurve)    
+                //计时器结束后，重新计算鼠标开始点
+                moveStartX.value = e.offsetX
+                moveStartY.value = e.offsetY
+                //画曲线的过程需要展示
+                canvasCxt.value.stroke(eraserPath.value)
                 canvasCxt.value.globalCompositeOperation = 'source-over'
             }
             //清除定时器
@@ -291,11 +303,9 @@ const redraw = () => {
             canvasCxt.value.stroke()
         } else if (record.shape === 'curve') {
             canvasCxt.value.stroke(record.curvePath)
-
-        //这个还有问题？？？ question
         } else if (record.shape === 'eraser') {
             canvasCxt.value.globalCompositeOperation = 'destination-out'
-            canvasCxt.value.fill(record.eraserPath)
+            canvasCxt.value.stroke(record.eraserPath)
             canvasCxt.value.globalCompositeOperation = 'source-over'
         }
     })

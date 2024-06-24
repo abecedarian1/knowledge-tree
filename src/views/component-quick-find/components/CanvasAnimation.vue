@@ -83,7 +83,7 @@ onMounted(()=>{
     
 
     canvas1.value.addEventListener("mouseover", (e) => {
-        raf = requestAnimationFrame(animate);
+        animate()
     });
 
     canvas1.value.addEventListener("mouseout", (e) => {

@@ -105,6 +105,11 @@
                 <el-tab-pane label="Canvas画布拖拽缩放" name="CanvasRender">
                     <canvas-render></canvas-render>
                 </el-tab-pane>
+                
+                <el-tab-pane label="canvas3D" name="canvas3D">
+                    <canvas3D></canvas3D>
+                </el-tab-pane>
+
             </el-tabs>
         </div>
 
@@ -130,6 +135,7 @@ import DataStreamGenerateRead from './components/DataStreamGenerateRead.vue'
 import RandomChatBox from './components/RandomChatBox.vue'
 import VirtualList from './components/VirtualList.vue'
 import CanvasRender from './components/CanvasRender.vue'
+import canvas3D from './components/Canvas3D.vue'
 
 
 /**
@@ -140,7 +146,7 @@ const shrinkOrNot = ref(false)
 const navList = ref([])
 const firstLoad = ref(true)
 const selectItem = ref()
-const activeName = ref('CanvasRender')
+const activeName = ref('canvas3D')
 
 //生成随机导航数组  并排序 去重
 const getRandomDataList=()=>{

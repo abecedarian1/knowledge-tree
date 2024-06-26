@@ -35,39 +35,7 @@ import canvasDemoJpg from '@/assets/images/canvas-demo.jpg'
  * 
 */
 
-/**
- * 鼠标滚动 以及画布移动的原理  ————但结果不对......question
-   以左上角为坐标原点（Ox,Oy）（0，0）
-      画布缩放前大小 width 200 * height 300
-       鼠标在画布上有目标点（x，y），需要保存该点不动
-        当画布放大1.5（或缩小0.8）倍时， canvas中的该点坐标相对画布没变，但是人看到是变了；
-        要想相对人不动，需要移动坐标
 
-       画布放大 1.5（缩小0.8）倍，画布整体像素不变， 人看到的画布整体尺寸会变为 1.5*width（0.8*width）,
-       整体变大  expAdd (1.5width-width) ==（1.5-1）* width
-       整体缩小  shrAdd (width-0.8width) ==（1-0.8）* width
-
-	   对于目标点来说他所增加的为（x-Ox）/ width * expAdd == (x-Ox) * (1.5-1)    ，
-       对于目标点来说他所减少的为（x-Ox）/ width * shrAdd == (x-Ox) * (1-0.8)    ，
-
-        需要缩回（或增加）这么多，才能保持原位置不变
-        对应到画布中，它的减少长度对应画布长度为  (x-Ox) * (1.5-1)  / realScale
- 		对应到画布中，它的减少长度对应画布长度为  (x-Ox) * (1-0.8)  / realScale    ，
-
-=======================
-     
-translate 会更改缩放原点，默认是左上角（0.0），translate移动到哪里，缩放原点就是哪里    
-
- * 
-*/
-
-/**
- * startX.value 计算错误 ，对应 realTranslate也计算错误  question
- * 缩放的计算-- 公式不正确  question
- * 平移的公式准确
- * 移动过程中的统一画布清空函数不对  quesiton
- * 边界条件限制不对  question
-*/
 
 //画布内容
 const canvas2 = ref()
@@ -75,14 +43,6 @@ const canvasCxt = ref()
 //元素在画布中渲染的起始点
 const startX = ref(0)
 const startY = ref(0)
-//实际缩放比--相比原有
-const realScale = ref(1)
-const realTranslateX = ref(0)
-const realTranslateY = ref(0)
-//坐标的实际移动位置
-// const xAxis = ref()
-
-
 //画布的默认宽高
 const defaultWidth = 800
 const defaultHeight = 600
@@ -114,6 +74,7 @@ const initDrawOption = reactive({
     lineWidth:2
 })
 
+
 //保存的画图记录
 const drawRecords = ref([])
 //保存的曲线路径
@@ -122,136 +83,54 @@ const eraserPath = ref(new Path2D())
 
 //图片边界处理
 const canvasVergeHandle=()=>{
-    // // 限制图片的左、上边界不为空白
-    // if (startX.value > 0) {
-    //     canvasCxt.value.translate(-startX.value,0)
-    //     startX.value = 0
-    // }
-    // if (startY.value > 0){
-    //     canvasCxt.value.translate(0,-startY.value)
-    //     startY.value = 0
-    // } 
-    // //限制右边不会留有空白
-    // if (startX.value + imgWidth.value < defaultWidth) {
-    //     canvasCxt.value.translate(-(defaultWidth - imgWidth.value),0)
-    //     startX.value = defaultWidth - imgWidth.value
-    // }
-    // //限制下边不会留有空白
-    // if (startY.value + imgHeight.value < defaultHeight){
-    //     canvasCxt.value.translate(0,-(defaultHeight - imgHeight.value))
-    //     startY.value = defaultHeight - imgHeight.value
-    // } 
+    // 限制图片的左、上边界不为空白
+    if (startX.value > 0) startX.value = 0
+    if (startY.value > 0) startY.value = 0
+    //限制右边不会留有空白
+    if (startX.value + imgWidth.value < defaultWidth) startX.value = defaultWidth - imgWidth.value
+    //限制下边不会留有空白
+    if (startY.value + imgHeight.value < defaultHeight) startY.value = defaultHeight - imgHeight.value
 }
 
-//图像缩放 ————有问题 question
+//图像缩放
 const canvasScroll=(e)=>{
     // 取消事件对当前元素的默认影响---取消原有的外层滚动
     e.preventDefault()
     let wheelDeltaY = e.wheelDeltaY || -e.deltaY
-    let scale = 1.25
+    let scale = 1.1
     // 鼠标相对于目标节点(当前节点)左上角的距离
-    let x = Math.floor(e.offsetX)
-    let y = Math.floor(e.offsetY)
+    let x = e.offsetX
+    let y = e.offsetY
 
     //每次缩放时，都要重新更新画布上图片的相对坐标,以及显示在画布上的图片的实际宽高
     if(wheelDeltaY >0){
-        
-       
-        
         // 放大
         imgWidth.value *= scale
         imgHeight.value *= scale
-        //相比原有放大的比例---放后面放前面？？？
-        realScale.value = imgWidth.value / defaultWidth
-
-        //要保证每次放大的都是整数倍，这样就不会出现溢出，导致移动位置错乱
-        canvasCxt.value.scale(1.25,1.25)
-
-
-        //相对局部放大
-        // let expandSizeX =(x-startX.value)*(scale-1) 
-        // let expandSizeY =(y-startY.value) *(scale-1)        
-        
-        let expandSizeX =(x-realTranslateX.value) *(scale-1) / realScale.value
-        let expandSizeY =(y-realTranslateY.value) *(scale-1) / realScale.value        
-        
-        startX.value -= expandSizeX
-        startY.value -= expandSizeY
-        // xVariance.value = -expandSizeX / realScale.value
-        // yVariance.value = -expandSizeY / realScale.value
-        xVariance.value = -expandSizeX
-        yVariance.value = -expandSizeY
-
-        // // canvasCxt.value.translate(xVariance.value,yVariance.value)
-        canvasCxt.value.transform(1,0,0,1,xVariance.value,yVariance.value)
-
-        // realTranslateX.value += xVariance.value
-        // realTranslateY.value += yVariance.value
-
-
-        realTranslateX.value = -expandSizeX
-        realTranslateY.value = -expandSizeY
-        
-
-        
-        
+        // 需要理解一下  question
+        startX.value -= (x-startX.value)*(scale-1)
+        startY.value -= (y-startY.value) *(scale-1)
     }else if(wheelDeltaY < 0){
 
         if((imgWidth.value/scale)>=defaultWidth && 
-            (imgHeight.value/scale)>=defaultHeight && 
-            startX.value <= 0 && 
-            startY.value <= 0 &&  
-            (startX.value + imgWidth.value) > defaultWidth && 
-            (startY.value + imgHeight.value) > defaultHeight
-
+            (imgHeight.value/scale)>defaultHeight 
         ){
-            canvasCxt.value.scale(0.8,0.8)
-            //缩小
+             //缩小
             imgWidth.value /= scale
             imgHeight.value /= scale
-            //相比原有缩小比例
-            realScale.value = imgWidth.value / defaultWidth
-
-
-            // //相对局部缩小
-            // let shrinkSizeX = (x-startX.value) *(1-1/scale)
-            // let shrinkSizeY = (y-startY.value) * (1-1/scale)
-
-            let shrinkSizeX = (x-realTranslateX.value) *(1-1/scale) / realScale.value
-            let shrinkSizeY = (y-realTranslateY.value) * (1-1/scale) / realScale.value
-
-
-            startX.value += shrinkSizeX
-            startY.value += shrinkSizeY
-            
-            // xVariance.value = shrinkSizeX / realScale.value
-            // yVariance.value = shrinkSizeY / realScale.value
-
-            
-            xVariance.value = shrinkSizeX
-            yVariance.value = shrinkSizeY
-
-            // canvasCxt.value.translate(xVariance.value,yVariance.value)
-            canvasCxt.value.transform(1,0,0,1,xVariance.value,yVariance.value)
-
-            realTranslateX.value += xVariance.value
-            realTranslateY.value += yVariance.value
-
-
-
+            //需要理解一下   question
+            startX.value += (x-startX.value) *(1-1/scale)
+            startY.value += (y-startY.value) * (1-1/scale)
+        }else{
+            //处理缩不回来的情况
+            imgWidth.value = defaultWidth
+            imgHeight.value = defaultHeight
+            startX.value = 0
+            startY.value = 0
         }
-        // else if(imgWidth.value!== defaultWidth && imgHeight.value !== defaultHeight) {
-        //     //处理缩不回来的情况
-        //     canvasCxt.value.scale(imgWidth.value/defaultWidth,imgHeight.value/defaultHeight)
-        //     imgWidth.value = defaultWidth
-        //     imgHeight.value = defaultHeight
-        //     startX.value = 0
-        //     startY.value = 0
-        // }
     }
-
     //处理边界
-    // canvasVergeHandle()
+    canvasVergeHandle()
     //重绘
     redraw()
 }
@@ -259,8 +138,8 @@ const canvasScroll=(e)=>{
 //鼠标按下时触发
 const canvasMousedown=(e)=>{
     //记录起始点
-    moveStartX.value = Math.floor(e.offsetX)
-    moveStartY.value = Math.floor(e.offsetY)
+    moveStartX.value = e.offsetX
+    moveStartY.value = e.offsetY
     if(drawShape.value == 'move'){
         //开始拖拽
         startDrag.value = true
@@ -303,46 +182,24 @@ const canvasMouseup=(e)=>{
 const canvasMousemove=(e)=>{
     let timer = null
     if(startDrag.value){
-
         timer = setTimeout(()=>{
-            // console.log('x:',startX.value + imgWidth.value,'y:',startY.value + imgHeight.value,'startX:',startX.value,'startY:',startY.value)
-
-            if(startX.value <= 0 && 
-               startY.value <= 0 &&  
-               (startX.value + imgWidth.value) > defaultWidth && 
-               (startY.value + imgHeight.value) > defaultHeight)
-            {
-                    
-                //鼠标结束点
-                moveEndX.value = Math.floor(e.offsetX) 
-                moveEndY.value = Math.floor(e.offsetY)
-                //重新计算图片在画布中的起始位置
-                xVariance.value = (moveEndX.value - moveStartX.value) / realScale.value
-                yVariance.value = (moveEndY.value - moveStartY.value)   / realScale.value
-                startX.value += xVariance.value
-                startY.value += yVariance.value 
-
-                //平移有缩放__是在当前缩放的基础上对平移的单位相对放大或缩小
-                // canvasCxt.value.translate(xVariance.value,yVariance.value)
-                //移动的时候要添加上缩放  ————为什么缩放的时候不需要添加上缩放？？
-                canvasCxt.value.transform(1,0,0,1,xVariance.value,yVariance.value)
-
-                realTranslateX.value += xVariance.value
-                realTranslateY.value += yVariance.value
-            
-
-                //处理边界
-                canvasVergeHandle()
-
-                //重绘
-                redraw()
-                //计时器结束后，重新计算鼠标开始点
-                moveStartX.value = Math.floor(e.offsetX)
-                moveStartY.value = Math.floor(e.offsetY)
-                //清除定时器
-                clearTimeout(timer)
-
-            }
+            //鼠标结束点
+            moveEndX.value = e.offsetX
+            moveEndY.value = e.offsetY
+            //重新计算图片在画布中的起始位置
+            xVariance.value = moveEndX.value - moveStartX.value
+            yVariance.value = moveEndY.value - moveStartY.value
+            startX.value += xVariance.value
+            startY.value += yVariance.value 
+            //处理边界
+            canvasVergeHandle()
+            //重绘
+            redraw()
+            //计时器结束后，重新计算鼠标开始点
+            moveStartX.value = e.offsetX
+            moveStartY.value = e.offsetY
+            //清除定时器
+            clearTimeout(timer)
         },5)
 
 
@@ -352,11 +209,11 @@ const canvasMousemove=(e)=>{
         //渲染正在画的图的同时，还要渲染原有的内容
         timer = setTimeout(()=>{
             //鼠标结束点
-            moveEndX.value = Math.floor(e.offsetX)
-            moveEndY.value = Math.floor(e.offsetY)
+            moveEndX.value = e.offsetX
+            moveEndY.value = e.offsetY
             //计算移动的距离
-            xVariance.value = (moveEndX.value - moveStartX.value) / realScale.value
-            yVariance.value = (moveEndY.value - moveStartY.value)  / realScale.value
+            xVariance.value = moveEndX.value - moveStartX.value
+            yVariance.value = moveEndY.value - moveStartY.value
             //重绘
             redraw()
             //画矩形
@@ -377,8 +234,8 @@ const canvasMousemove=(e)=>{
                 curve.lineTo(moveEndX.value,moveEndY.value)
                 curvePath.value.addPath(curve)    
                 //计时器结束后，重新计算鼠标开始点
-                moveStartX.value = Math.floor(e.offsetX)
-                moveStartY.value = Math.floor(e.offsetY)
+                moveStartX.value = e.offsetX
+                moveStartY.value = e.offsetY
                 //画曲线的过程需要展示
                 canvasCxt.value.stroke(curvePath.value)
 
@@ -390,8 +247,8 @@ const canvasMousemove=(e)=>{
                 eraserCurve.lineTo(moveEndX.value,moveEndY.value)
                 eraserPath.value.addPath(eraserCurve)    
                 //计时器结束后，重新计算鼠标开始点
-                moveStartX.value = Math.floor(e.offsetX)
-                moveStartY.value = Math.floor(e.offsetY)
+                moveStartX.value = e.offsetX
+                moveStartY.value = e.offsetY
                 //画曲线的过程需要展示
                 canvasCxt.value.stroke(eraserPath.value)
                 canvasCxt.value.globalCompositeOperation = 'source-over'
@@ -425,14 +282,11 @@ const savePic=()=>{
 
 // 更新画布--重绘
 const redraw = () => {
-    
-    //清除画布---如何在这里统一清空
-    // canvasCxt.value.clearRect(0, 0, defaultWidth/realScale.value, defaultHeight/realScale.value)
-    //清空上一帧的 移动和缩放产生的相对位置和缩放量 ---好像还有点问题 question
-    canvasCxt.value.clearRect(-xVariance.value, -yVariance.value, defaultWidth/realScale.value, defaultHeight/realScale.value)
-
+    //清除画布
+    canvasCxt.value.clearRect(0, 0, defaultWidth, defaultHeight)
     //使用全图进行缩放
-    canvasCxt.value.drawImage(imgObj.value,0,0,defaultWidth,defaultHeight)   
+    canvasCxt.value.drawImage(imgObj.value, startX.value, startY.value, imgWidth.value, imgHeight.value)
+    
     //重新绘制历史记录里边的内容
     drawRecords.value.forEach(record => {
         canvasCxt.value.fillStyle = record.fillStyle
@@ -463,7 +317,7 @@ const clearCanvas=()=>{
     //清除画布
     canvasCxt.value.clearRect(0,0,defaultWidth,defaultHeight)
     //使用全图进行缩放
-    canvasCxt.value.drawImage(imgObj.value,0,0,defaultWidth,defaultHeight)   
+    canvasCxt.value.drawImage(imgObj.value,startX.value,startY.value,imgWidth.value,imgHeight.value)
     drawRecords.value = []
 }
 
@@ -493,8 +347,7 @@ onMounted(()=>{
 <style scoped lang="scss">
 
 #canvas2{
-        /* background-color: beige; */
-        background-color: red;
+        background-color: beige;
 }
 .draw-shape{
     color:rgb(250, 227, 213);

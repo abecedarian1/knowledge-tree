@@ -7,13 +7,13 @@
                 <a @click="exportPic = ''" style="font-size: 24px;color: red;padding-left: 5px;">X</a></div>
         </div>
         <div class="toolBar">
-            <span @click="drawShape = 'move' " :class="drawShape=='move' ? 'draw-shape' : '' ">移动 +</span>
-            <span @click="drawShape = 'rect' " :class="drawShape=='rect' ? 'draw-shape' : '' ">矩形◻</span>
-            <span @click="drawShape = 'line' "  :class="drawShape=='line' ? 'draw-shape' : '' ">直线 /</span>
-            <span @click="drawShape = 'curve' "  :class="drawShape=='curve' ? 'draw-shape' : '' ">曲线 S</span>
-            <span @click="drawShape = 'eraser' "  :class="drawShape=='eraser' ? 'draw-shape' : '' ">橡皮擦</span>
-            <span @click="undo">撤销</span>
-            <span @click="clearCanvas">清空画布</span>
+            <span @click="drawShape = 'move' " :class="drawShape=='move' ? 'active-shape' : '' ">移动 +</span>
+            <span @click="drawShape = 'rect' " :class="drawShape=='rect' ? 'active-shape' : '' ">矩形◻</span>
+            <span @click="drawShape = 'line' "  :class="drawShape=='line' ? 'active-shape' : '' ">直线 /</span>
+            <span @click="drawShape = 'curve' "  :class="drawShape=='curve' ? 'active-shape' : '' ">曲线 S</span>
+            <span @click="drawShape = 'eraser' "  :class="drawShape=='eraser' ? 'active-shape' : '' ">橡皮擦</span>
+            <span :class="drawRecords.length == 0 ? 'unable' : '' "  @click="undo">撤销</span>
+            <span :class="drawRecords.length == 0 ? 'unable' : '' " @click="clearCanvas">清空画布</span>
         </div>
         <canvas ref="canvas2" 
             @mousedown="canvasMousedown" 
@@ -346,8 +346,11 @@ const canvasMousemove=(e)=>{
 
 // 撤销最后一次绘图操作
 const undo = () => {
-    drawRecords.value.pop()
-    redraw()
+    if(drawRecords.value.length>0){
+        drawRecords.value.pop()
+        redraw()
+    }
+
 }
 
 
@@ -401,11 +404,13 @@ const redraw = () => {
 
 //清空画布
 const clearCanvas=()=>{
-    //清除画布
-    canvasCxt.value.clearRect(0,0,defaultWidth,defaultHeight)
-    //使用全图进行缩放
-    canvasCxt.value.drawImage(imgObj.value,0,0,defaultWidth,defaultHeight)   
-    drawRecords.value = []
+    if(drawRecords.value.length>0){
+        //清除画布
+        canvasCxt.value.clearRect(0,0,defaultWidth,defaultHeight)
+        //使用全图进行缩放
+        canvasCxt.value.drawImage(imgObj.value,0,0,defaultWidth,defaultHeight)   
+        drawRecords.value = []
+    }
 }
 
 onMounted(()=>{
@@ -435,9 +440,8 @@ onMounted(()=>{
 
 #canvas2{
         background-color: beige;
-        /* background-color: red; */
 }
-.draw-shape{
+.active-shape{
     color:rgb(250, 227, 213);
 }
 
@@ -470,11 +474,18 @@ onMounted(()=>{
     
     &>span{
        padding:0 10px; 
-
        &:hover{
            color:rgb(250, 227, 213);
            cursor:pointer;
        }
+    }
+
+    .unable{
+        /* color:rgb(250, 227, 213); */
+        color:rgb(250, 227, 213,0.5);
+        &:hover{
+            color:rgb(250, 227, 213,0.5);
+        }
     }
 }
 

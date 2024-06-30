@@ -88,7 +88,9 @@
                     <data-stream-generate-read :loaded="DataStreamGenerateReadLoaded"></data-stream-generate-read>
                 </el-tab-pane>
 
-                <el-tab-pane lazy label="webSocket一对一随机聊天框" name="RandomChatBox">
+                <!-- lazy  chatBox不可以懒加载  question -->
+                <!-- lazy  和  非lazy的区别 ？？ -->
+                <el-tab-pane label="webSocket一对一随机聊天框" name="RandomChatBox">
                     <random-chat-box :loaded="RandomChatBoxLoaded"></random-chat-box>
                 </el-tab-pane>
 
@@ -150,6 +152,7 @@ const tabClick = (tab) =>{
         // console.log('当前tab',paneName)
         canvas3DLoaded.value = true
     }else if(paneName == 'RandomChatBox'){
+        // console.log('chatBox')
         RandomChatBoxLoaded.value = true
     }else if(paneName == 'Diagram'){
         DiagramLoaded.value = true

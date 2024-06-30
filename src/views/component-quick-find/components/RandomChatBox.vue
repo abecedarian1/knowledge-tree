@@ -20,25 +20,12 @@
 </template>
 
 <script setup>
-import {ref} from 'vue'
+import {ref,defineProps,watch} from 'vue'
 const messageBody = ref()
 const readySendMessage = ref('')
+const props = defineProps(['loaded'])
 
-
-const ws = new WebSocket('ws://124.222.224.186:8800')
-ws.onopen = ()=>{
-    console.log('打开连接中')
-}
-ws.onmessage = (message)=>{
-    // console.log('接收消息中')
-    addChatRecord(message.data,'receiver')
-}
-ws.onerror = (err)=>{
-    console.log('连接出错了！！')    
-}
-ws.onclose = () => {
-    console.log('关闭连接')
-}
+const ws = ref()
 
 //添加聊天记录功能
 const addChatRecord = (chatRecord,person)=>{
@@ -79,7 +66,7 @@ const addChatRecord = (chatRecord,person)=>{
 
 // 重新连接中
 const openWebsocket = ()=>{
-    ws.onopen()
+    ws.value.onopen()
 }
 
 // 发送消息
@@ -87,7 +74,7 @@ const sendWebsocketMessage = ()=>{
     if(readySendMessage.value.innerHTML){
         // 向聊天记录中添加一条数据
         addChatRecord(readySendMessage.value.innerHTML,'sender')
-        ws.send(readySendMessage.value.innerHTML)
+        ws.value.send(readySendMessage.value.innerHTML)
         readySendMessage.value.innerHTML = ''
     }
 }
@@ -95,8 +82,32 @@ const sendWebsocketMessage = ()=>{
 // 和中断重连不一样
 // 关闭连接
 const closeWebsocket = ()=>{
-    ws.onclose()
+    ws.value.onclose()
 }
+
+watch(
+    ()=>props.loaded,
+    (val)=>{
+        if(val){ 
+            ws.value = new WebSocket('ws://124.222.224.186:8800')
+
+            ws.value.onopen = ()=>{
+                console.log('打开连接中')
+            }
+            ws.value.onmessage = (message)=>{
+                // console.log('接收消息中')
+                addChatRecord(message.data,'receiver')
+            }
+            ws.value.onerror = (err)=>{
+                console.log('连接出错了！！')    
+            }
+            ws.value.onclose = () => {
+                console.log('关闭连接')
+            }
+        }
+
+    }
+)
 
 </script>
 

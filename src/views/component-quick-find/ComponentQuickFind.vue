@@ -10,7 +10,7 @@
         
         <!-- 组件内容 -->
         <div class="content" >   
-            <el-tabs v-model="activeName" type="border-card"  tab-position="left" class="demo-tabs">
+            <el-tabs @tab-click="tabClick" v-model="activeName" type="border-card"  tab-position="left" class="demo-tabs">
                 <el-tab-pane label="时间选择器" name='TimeSelectLimit'>
                     <!-- 如果想要封装成组件的话，需要 子传父 直接获取最终值 emit，
                         也可以 :ref="(el)=>{child = el}" 
@@ -50,7 +50,7 @@
                 </el-tab-pane>
 
                 <el-tab-pane label="图表" name="Diagram">
-                    <Diagram></Diagram>
+                    <Diagram :loaded="DiagramLoaded"></Diagram>
                 </el-tab-pane>
 
                 <el-tab-pane label="深度遍历" name="DeepCopy">
@@ -88,7 +88,7 @@
                 </el-tab-pane>
 
                 <el-tab-pane label="webSocket一对一随机聊天框" name="RandomChatBox">
-                    <random-chat-box></random-chat-box>
+                    <random-chat-box :loaded="RandomChatBoxLoaded"></random-chat-box>
                 </el-tab-pane>
 
                 <el-tab-pane label="虚拟列表" name="VirtualList" style="display: flex;">
@@ -105,9 +105,8 @@
                 <el-tab-pane label="Canvas画布拖拽缩放" name="CanvasRender">
                     <canvas-render></canvas-render>
                 </el-tab-pane>
-                
-                <el-tab-pane label="canvas3D" name="canvas3D">
-                    <canvas3D></canvas3D>
+                <el-tab-pane label="Canvas3D" name="Canvas3D">
+                    <canvas3D :loaded='canvas3DLoaded'></canvas3D>
                 </el-tab-pane>
 
             </el-tabs>
@@ -137,6 +136,25 @@ import VirtualList from './components/VirtualList.vue'
 import CanvasRender from './components/CanvasRender.vue'
 import canvas3D from './components/Canvas3D.vue'
 
+const canvas3DLoaded = ref(false)
+const RandomChatBoxLoaded = ref(false)
+const DiagramLoaded = ref(false)
+const tabClick = (tab) =>{
+    let paneName = tab.paneName
+    if(paneName == 'Canvas3D'){
+        canvas3DLoaded.value = true
+    }else if(paneName == 'RandomChatBox'){
+        RandomChatBoxLoaded.value = true
+    }else if(paneName == 'Diagram'){
+        DiagramLoaded.value = true
+    }
+    else{
+        // canvas3DLoaded.value = false
+        // RandomChatBoxLoaded.value = false
+        DiagramLoaded.value = false
+    }
+
+}
 
 /**
  * 侧边栏SideBar
@@ -146,7 +164,7 @@ const shrinkOrNot = ref(false)
 const navList = ref([])
 const firstLoad = ref(true)
 const selectItem = ref()
-const activeName = ref('canvas3D')
+const activeName = ref('CanvasRender')
 
 //生成随机导航数组  并排序 去重
 const getRandomDataList=()=>{
@@ -194,7 +212,6 @@ watch(shrinkOrNot,(oldVal,newVal)=>{
         firstLoad.value = false            
     }
 })
-
 
 /**
  * 时间选择器

@@ -7,9 +7,11 @@
 </template>
 
 <script  setup>
-    import {ref,onMounted,reactive,onBeforeUnmount} from 'vue'
+    import {ref,onMounted,reactive,defineProps,watch} from 'vue'
     // import * as echarts from 'echarts';
     import { init } from 'echarts';
+
+    const props = defineProps(['loaded'])
 
     // const dataList = ref([5, 20, 36, 10, 8, 20])
     const dataList = reactive([5, 20, 36, 10, 8, 20])
@@ -27,7 +29,6 @@
             operationTitle.value = '停止动态获取数据'
             changeButtonColor(true)
             dataInterval.value = setInterval(() => {
-                console.log('数据更新中---')
                 //实际开发中是要调用接口，
                 for(let i=0;i<6;i++){
                 //循环添加随机数
@@ -88,10 +89,21 @@
         });
     })
 
-    onBeforeUnmount(()=>{
-        console.log('离开页面停止数据更新')
-        clearInterval(dataInterval.value)
-    })
+
+    //监听是否离开页面，对数据更新操作进行销毁
+    watch(
+        ()=>props.loaded,
+        (val)=>{
+            if(!val && dynamicOrNot.value){
+                clearInterval(dataInterval.value)  
+                //按钮要变过来
+                dynamicOrNot.value = !dynamicOrNot.value
+                // dynamicOrNot.value = false  //上下两个都可
+                operationTitle.value = '开始动态获取数据'
+                changeButtonColor(false)
+            }
+        }
+    )
 
 </script>
 

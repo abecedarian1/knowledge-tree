@@ -10,19 +10,19 @@
         
         <!-- 组件内容 -->
         <div class="content" >   
-            <el-tabs @tab-click="tabClick" v-model="activeName" type="border-card"  tab-position="left" class="demo-tabs">
-                <el-tab-pane label="时间选择器" name='TimeSelectLimit'>
+            <el-tabs  @tab-click="tabClick" v-model="activeName" type="border-card"  tab-position="left" class="demo-tabs">
+                <el-tab-pane lazy label="时间选择器" name='TimeSelectLimit'>
                     <!-- 如果想要封装成组件的话，需要 子传父 直接获取最终值 emit，
                         也可以 :ref="(el)=>{child = el}" 
                     -->
                     <time-select-limit @emitData="emitTimeData"></time-select-limit>
                 </el-tab-pane>
 
-                <el-tab-pane label="ToDoList" name="ToDoList">
+                <el-tab-pane lazy label="ToDoList" name="ToDoList">
                     <to-do-list></to-do-list>
                 </el-tab-pane>
 
-                <el-tab-pane label="导航栏" name="SideBar"> 
+                <el-tab-pane lazy label="导航栏" name="SideBar"> 
                     <side-bar 
                         @changeStatus="changeStatus" 
                         v-model:shrinkOrNot="shrinkOrNot"
@@ -49,49 +49,50 @@
                     </side-bar>
                 </el-tab-pane>
 
-                <el-tab-pane label="图表" name="Diagram">
+                <el-tab-pane lazy label="图表" name="Diagram">
                     <Diagram :loaded="DiagramLoaded"></Diagram>
                 </el-tab-pane>
 
-                <el-tab-pane label="深度遍历" name="DeepCopy">
+                <el-tab-pane lazy label="深度遍历" name="DeepCopy">
                     <deep-copy></deep-copy>
                 </el-tab-pane>
 
-                <el-tab-pane label="全屏" name="FullScreen">
+                <el-tab-pane lazy label="全屏" name="FullScreen">
                     <full-screen></full-screen>
                 </el-tab-pane>
-                <el-tab-pane label="canvas小动画" name="CanvasAnimation">
+
+                <el-tab-pane lazy label="canvas小动画" name="CanvasAnimation">
                     <canvas-animation></canvas-animation>
                 </el-tab-pane>
 
-                <el-tab-pane label="金额格式化(千分位)" name="AmountTransform">
+                <el-tab-pane lazy label="金额格式化(千分位)" name="AmountTransform">
                     <amount-transform></amount-transform> 
                 </el-tab-pane>
-                <el-tab-pane label="可拖拽移动框" name="DraggableBox">
+                <el-tab-pane lazy label="可拖拽移动框" name="DraggableBox">
                      <draggable-box></draggable-box>
                 </el-tab-pane>
               
-                <el-tab-pane label="数据嵌套平铺" name="DataFlat">
+                <el-tab-pane lazy label="数据嵌套平铺" name="DataFlat">
                     <data-flat></data-flat>
                 </el-tab-pane>
 
-                <el-tab-pane label="响应式布局参考" name="ResponsiveLayoutReference">
+                <el-tab-pane lazy label="响应式布局参考" name="ResponsiveLayoutReference">
                     <responsive-layout-reference></responsive-layout-reference>
                 </el-tab-pane>
 
-                <el-tab-pane label="fetch实现在线视频流读取" name="VideoStreamRead">
+                <el-tab-pane lazy label="fetch实现在线视频流读取" name="VideoStreamRead">
                     <video-stream-read></video-stream-read>
                 </el-tab-pane>
 
-                <el-tab-pane label="数据流的生成和读取" name="DataStreamGenerateRead">
-                    <data-stream-generate-read></data-stream-generate-read>
+                <el-tab-pane lazy label="数据流的生成和读取" name="DataStreamGenerateRead">
+                    <data-stream-generate-read :loaded="DataStreamGenerateReadLoaded"></data-stream-generate-read>
                 </el-tab-pane>
 
-                <el-tab-pane label="webSocket一对一随机聊天框" name="RandomChatBox">
+                <el-tab-pane lazy label="webSocket一对一随机聊天框" name="RandomChatBox">
                     <random-chat-box :loaded="RandomChatBoxLoaded"></random-chat-box>
                 </el-tab-pane>
 
-                <el-tab-pane label="虚拟列表" name="VirtualList" style="display: flex;">
+                <el-tab-pane lazy label="虚拟列表" name="VirtualList" style="display: flex;">
                     <div style="width: 500px;">
                         <virtual-list :items="items" :lineSize="lineSize" :showNumber="showNumber"></virtual-list>
                     </div>
@@ -102,10 +103,11 @@
                     </div>
                 </el-tab-pane>
 
-                <el-tab-pane label="Canvas画布拖拽缩放" name="CanvasRender">
+                <el-tab-pane lazy label="Canvas画布拖拽缩放" name="CanvasRender">
                     <canvas-render></canvas-render>
                 </el-tab-pane>
-                <el-tab-pane label="Canvas3D" name="Canvas3D">
+
+                <el-tab-pane lazy label="Canvas3D" name="Canvas3D">
                     <canvas3D :loaded='canvas3DLoaded'></canvas3D>
                 </el-tab-pane>
 
@@ -139,21 +141,27 @@ import canvas3D from './components/Canvas3D.vue'
 const canvas3DLoaded = ref(false)
 const RandomChatBoxLoaded = ref(false)
 const DiagramLoaded = ref(false)
+const DataStreamGenerateReadLoaded = ref(false)
+
+
 const tabClick = (tab) =>{
     let paneName = tab.paneName
     if(paneName == 'Canvas3D'){
+        // console.log('当前tab',paneName)
         canvas3DLoaded.value = true
     }else if(paneName == 'RandomChatBox'){
         RandomChatBoxLoaded.value = true
     }else if(paneName == 'Diagram'){
         DiagramLoaded.value = true
-    }
-    else{
-        // canvas3DLoaded.value = false
+    }else if(paneName == 'DataStreamGenerateRead'){
+        DataStreamGenerateReadLoaded.value = true
+    }else{
+        // console.log('其他tab')
+        canvas3DLoaded.value = false
         // RandomChatBoxLoaded.value = false
         DiagramLoaded.value = false
+        DataStreamGenerateReadLoaded.value = false
     }
-
 }
 
 /**

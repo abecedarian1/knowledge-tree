@@ -63,8 +63,22 @@ const animate=()=>{
 
 
 const renderPage = ()=>{
+    //要随着屏幕大小的变换而变换
+    renderer.setSize(Box3D.value.parentNode.clientWidth,Box3D.value.parentNode.clientHeight)  //渲染的屏幕的宽高
+    //渲染
+    renderer.render(scene,camera)
+    //把canvas渲染内容添加到页面中
+    Box3D.value.appendChild(renderer.domElement)
+}
 
-    //将网格添加到场景中
+
+onMounted(async()=>{ 
+
+    //避免首次加载过程中获取不到上级Node属性的问题
+    nextTick()
+
+
+      //将网格添加到场景中
     // parentCube.add(cube)
     //对象局部位置的三维坐标系？？？
     // parentCube.position.set(-3,0,0)
@@ -90,17 +104,12 @@ const renderPage = ()=>{
     // controls.autoRotate = true
 
     camera.lookAt(0,0,0)
-    
-    //要随着屏幕大小的变换而变换
-    renderer.setSize(Box3D.value.parentNode.clientWidth,Box3D.value.parentNode.clientHeight)  //渲染的屏幕的宽高
-    //渲染
-    renderer.render(scene,camera)
-    //把canvas渲染内容添加到页面中
-    Box3D.value.appendChild(renderer.domElement)
-}
 
 
-onMounted(async()=>{ 
+
+    /**以下函数内容加载时--是否会存在canvas中多帧的问题，画布没有清空的问题 -----不确定**/
+    renderPage();
+
     //进入开始动画
     Box3D.value.addEventListener("mouseover", (e) => {
         if(e.target.tagName == 'CANVAS' && !animationRunning){
@@ -122,6 +131,7 @@ watch(
     ()=>props.loaded,
     async (val)=>{
         if(val){
+            // console.log('准备加载中------')
             let parentWidth = 0
             let timer = null
             //轮询 ---目前还没有其他方法  ——————tab的bug  question

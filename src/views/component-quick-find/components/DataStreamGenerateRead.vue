@@ -19,7 +19,8 @@
 </template>
 
 <script setup>
-import {onMounted,ref,onBeforeUnmount} from "vue"
+import {onMounted,ref,defineProps,watch} from "vue"
+const props  = defineProps(['loaded'])
 const list1 = ref()
 const list2 = ref()
 const finalResult = ref()
@@ -106,10 +107,16 @@ const stopGenerateData = () => {
     }
 }
 
-onBeforeUnmount(()=>{
-        console.log('离开页面停止数据读取和生成')
-        stopGenerateData()
-})
+watch(
+    ()=>props.loaded,
+    (val)=>{
+        if(!val){
+            console.log('离开页面停止数据读取和生成')
+            stopGenerateData()
+        }
+    }
+)
+
 
 </script>
 

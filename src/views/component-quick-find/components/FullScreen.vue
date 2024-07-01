@@ -34,7 +34,7 @@ document.addEventListener("fullscreenchange",()=>{
 
 </script>
 
-<style>
+<style scoped>
     .parent{
         position: relative;
         height: 100%;

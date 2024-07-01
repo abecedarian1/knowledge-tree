@@ -109,6 +109,14 @@
                     <canvas-render></canvas-render>
                 </el-tab-pane>
 
+                
+
+                <el-tab-pane label="可视化大屏" name="VisualLargeScreen">
+                    <visual-large-screen></visual-large-screen>
+                </el-tab-pane>
+
+
+
                 <el-tab-pane lazy label="Canvas3D" name="Canvas3D">
                     <canvas3D :loaded='canvas3DLoaded'></canvas3D>
                 </el-tab-pane>
@@ -138,6 +146,7 @@ import DataStreamGenerateRead from './components/DataStreamGenerateRead.vue'
 import RandomChatBox from './components/RandomChatBox.vue'
 import VirtualList from './components/VirtualList.vue'
 import CanvasRender from './components/CanvasRender.vue'
+import VisualLargeScreen from './components/VisualLargeScreen.vue'
 import canvas3D from './components/Canvas3D.vue'
 
 const canvas3DLoaded = ref(false)
@@ -175,7 +184,7 @@ const shrinkOrNot = ref(false)
 const navList = ref([])
 const firstLoad = ref(true)
 const selectItem = ref()
-const activeName = ref('CanvasRender')
+const activeName = ref('VisualLargeScreen')
 
 //生成随机导航数组  并排序 去重
 const getRandomDataList=()=>{

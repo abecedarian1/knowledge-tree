@@ -1,0 +1,35 @@
+@import './components/common.scss';
+
+.app {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+  
+}
+
+.bar{
+  width:100%;
+  height: $topBarHeight;
+  background-color:#596370;
+}
+
+.bottom{
+  width:100%;
+  height:$footerHeight;
+  background-color:#292e34;
+
+  display: flex;
+  flex-direction: column;
+
+  .copyright{
+      color:white;
+      font-family:楷体;
+      text-align:center;
+  }
+}
+
+
+
+

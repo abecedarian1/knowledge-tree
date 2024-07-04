@@ -1,0 +1,54 @@
+@import "../../components/common.scss";
+
+
+
+.user_bar{
+    width:100%;
+    height:$userBarHeight;
+    background-color:#D9B2B1;
+    line-height: $userBarHeight;
+}
+
+
+.content{
+    position: relative;
+    display: flex;
+    flex-direction: row;
+
+    width:100%;
+    min-height: calc(100vh - $topBarHeight - $footerHeight - $userBarHeight);
+    background-color:white;
+    
+    .option_bar{
+        width: 15%;
+        overflow-y: auto;
+        min-height: calc(100vh - $topBarHeight - $footerHeight - $userBarHeight);
+        background-color:#FBEDF7;
+
+        &>ul{
+            margin-top: 10%;
+
+            
+            .select-option{
+                background-color: pink;
+            }
+
+            &>li{
+                display: flex;
+                flex-direction:column;
+                justify-content:center;
+                height: $sideBarItemHeight;
+                a{
+                    cursor:pointer
+                }
+            }
+        }
+    }
+        
+    .box_1{
+        width: 85%;
+        position: relative;
+    }
+
+}
+

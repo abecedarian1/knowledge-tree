@@ -42,8 +42,7 @@ export default function Home() {
                             if (item.name == '内容新增') {
                                 return (
                                     <li key={item.id}>
-                                        {item.name}
-                                        {/* <NavLink to='/contentManagement'>{item.name}</NavLink> */}
+                                        <NavLink to='/contentManagement'>{item.name}</NavLink>
                                     </li>
                                 )
                             } else if (item.name == '公共组件') {

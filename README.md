@@ -1,5 +1,5 @@
 # knowledge-tree
-[react]
+[react] + bootstrap
 
 ### 创建+启动项目
 

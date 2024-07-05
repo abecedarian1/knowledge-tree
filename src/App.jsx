@@ -12,7 +12,6 @@ function App() {
       <header className="bar"></header>
       <main>
         {element}
-        {/* <Outlet/> */}
       </main>
       <footer className="bottom">
         <p className="copyright">

@@ -39,7 +39,6 @@ export default function Base(){
                     {
                         modelList.map((item)=>{
                             return <li key={item.id}>
-                                {/* 跳转有问题  question */}
                                 <Link to={item.url}>{item.name}</Link>
                             </li>
                         })

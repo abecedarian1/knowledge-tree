@@ -1,0 +1,53 @@
+@import '../../components/common.scss';
+
+$content-height:calc(100vh - $topBarHeight - $userBarHeight - $footerHeight);
+
+.user_bar{
+    width:100%;
+    height:$userBarHeight;
+    background-color:#D9B2B1;
+    line-height: $userBarHeight;
+}
+
+.content{
+    box-sizing: border-box;
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    width:100%;
+    min-height: $content-height;
+    background-color:white;
+
+    .option_bar1{
+        position: relative;
+        box-sizing: border-box;
+        width:25%;
+        overflow: auto;
+        background-color:#FBEDF7;        
+        .el-tree{
+            background-color:#FBEDF7;
+        }
+    }
+        
+    .box_1{
+        box-sizing: border-box;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        width:75%;
+        padding: 10px;
+
+        ul{
+            width: 90%;
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+
+            li {
+                margin: 5px 0;
+                background-color: snow;
+            }
+        }
+    }
+}

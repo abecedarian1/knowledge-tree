@@ -5,21 +5,15 @@ import Js from '../pages/WebFront/Base/Js/Js'
 import JsContent from '../pages/WebFront/Base/Js/JsContent/JsContent'
 import ContentMangement from '../pages/ContentManagement/ContentManagement'
 
-import {Navigate} from 'react-router-dom'
+// import {Navigate} from 'react-router-dom'
 
 const routes = [
   {
-    path:'/home',
+    path:'/',
     element:<Home />
   },
   {
-      path:'/',
-      element:<Navigate to='/home'/>
-  },
-
-  
-  {
-    path:'/:block',
+    path:':block',
     element:<WebFront/>,
     children:[
       {
@@ -36,19 +30,29 @@ const routes = [
         element:<JsContent/>
       }
     ]
-  },
-
+  },      
   // 前端  动态路由
   {
-    path:'/contentManagement',
-    component:<ContentMangement/>
+    path:'contentManagement',
+    element:<ContentMangement/>
   },
 
 
   // {
   //   path:'/component-quick-find',
-  //   component:ComponentQuickFind
+  //   element:ComponentQuickFind
   // },
+
+
+
+
+
+  // {
+  //     path:'/',
+  //     element:<Navigate to='/home'/>
+  // },
+
+  
 
 ]
 export default routes

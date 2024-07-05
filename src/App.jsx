@@ -10,7 +10,9 @@ function App() {
   return (
     <div className="App">
       <header className="bar"></header>
-      <main>{element}</main>
+      <main>
+        {element}
+      </main>
       <footer className="bottom">
         <p className="copyright">
             版权信息：Copyright&copy;2021

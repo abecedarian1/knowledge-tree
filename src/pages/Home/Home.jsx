@@ -8,7 +8,7 @@ const getHomeList = async () => {
     let res = await baseService.get('/getKnowledgeCategory')
     list = res.data
     list.forEach((item) => {
-        item.url = item.url + "?mainId=" + item.id
+        item.url ='/' + item.url + "?mainId=" + item.id
     });
     return list
 }
@@ -40,23 +40,25 @@ export default function Home() {
                     (<ul>
                         {categoryList.map((item) => {
                             if (item.name == '内容新增') {
-                                return <li key={item.id}>11{item.name}</li>
+                                return (
+                                    <li key={item.id}>
+                                        {item.name}
+                                        {/* <NavLink to='/contentManagement'>{item.name}</NavLink> */}
+                                    </li>
+                                )
                             } else if (item.name == '公共组件') {
                                 return <li key={item.id}>11{item.name}</li>
                             }
                             return (
                                 <li key={item.id}>
-                                    <NavLink to={'/' + item.url}>{item.name}</NavLink>
+                                    <NavLink to={item.url}>{item.name}</NavLink>
                                 </li>
                             )
                         })}
                     </ul>)
                 }
                 {/* <li v-for="(item,index) in categroyList" :key="index" >
-
-                        <router-link v-if="item.name=='内容新增'" to="content-management">{{item.name}}</router-link>
                         <router-link v-else-if="item.name=='公共组件'" to="component-quick-find">{{item.name}}</router-link>
-                        <router-link v-else :to="item.url">{{item.name}}</router-link>
                     </li>  */}
             </div>
         </div>

@@ -8,13 +8,12 @@ const getCurrentMessage = async (mainId) => {
     // 通过id调用查询接口
     let res = await baseService.get('/getKnowledgeCategory?id=' + mainId)
     let titleName = res.data[0].name
-    let parentUrl = res.data[0].url
     let sideBarList = []
     // 当前内容列表
     await baseService.get('/modelList?parentId=' + mainId).then((res) => {
         sideBarList = res.data
         sideBarList.forEach(item => {
-            item.url = '/' + parentUrl + '/' + item.url + '?mainId=' + mainId + '&branchId=' + item.id
+            item.url = item.url + '?mainId=' + mainId + '&branchId=' + item.id
         });
     })
     return { sideBarList, titleName }

@@ -1,6 +1,6 @@
 import './App.scss';
 // Routes,Route,NavLink,
-import { useRoutes} from 'react-router-dom'
+import { useRoutes,Outlet} from 'react-router-dom'
 
 import routes from './routes'
 
@@ -12,6 +12,7 @@ function App() {
       <header className="bar"></header>
       <main>
         {element}
+        {/* <Outlet/> */}
       </main>
       <footer className="bottom">
         <p className="copyright">

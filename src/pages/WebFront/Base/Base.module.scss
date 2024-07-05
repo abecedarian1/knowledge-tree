@@ -1,0 +1,19 @@
+.base{
+    ul{
+        position: relative;
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        flex-wrap: wrap;
+
+        li{
+            position: relative;            
+            margin: 5px;
+            flex:1 1 28%;
+            background-color: powderblue;
+            line-height:150px;
+        }
+    }
+}
+    

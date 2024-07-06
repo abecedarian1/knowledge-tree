@@ -38,12 +38,11 @@ $content-height:calc(100vh - $topBarHeight - $userBarHeight - $footerHeight);
         width:75%;
         padding: 10px;
 
-        ul{
+        &> ul{
             width: 90%;
             margin-top: 10px;
             display: flex;
             flex-direction: column;
-
             li {
                 margin: 5px 0;
                 background-color: snow;

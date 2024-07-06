@@ -1,5 +1,5 @@
 .base{
-    ul{
+    &> ul{
         position: relative;
         display: flex;
         flex-direction: row;

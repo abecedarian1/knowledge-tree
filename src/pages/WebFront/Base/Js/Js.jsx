@@ -40,7 +40,6 @@ export default function Js(){
         <div className={js.js}>
             <div className={js.title}>{modelTitle}</div>
             {contentList.length > 0 && (
-                <div>
                     <ul>
                         {contentList.map((item,index)=>{
                             return(
@@ -50,7 +49,6 @@ export default function Js(){
                             )
                         })}
                     </ul> 
-                </div>
             )}
         </div>
     )

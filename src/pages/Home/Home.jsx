@@ -24,9 +24,11 @@ export default function Home() {
     return (
         <div>
             <div className={home.banner}>
-                <div className={home.tittle_bg}> </div>
-                <div className={home.tittle}><h1>线上个人笔记</h1></div>
-                <div className="search">
+                <div className={home.tittle_bg}>
+                    <div className={home.tittle}><h1>线上个人笔记</h1></div>
+                </div>
+
+                <div className={home.search}>
                     <div style={{ width: '85%', position: 'relative' }}>
                         <span><input type="text" className={home.search_content} placeholder="请输入你想查找的内容" /></span>
                         <span><input type="submit" className={home.search_button} value="搜索" /></span>

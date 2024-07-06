@@ -1,32 +1,74 @@
 import contentMangement from "./ContentManagement.module.scss"
-
-//覆盖bootstrap的下拉菜单显示
-const handleClick=(event)=>{
-    if(/dropdown-toggle/.test(event.target.className)){
-        //兄弟节点
-        let sibling = event.target.nextSibling
-        // 默认为false
-        let pressed = event.target.getAttribute('aria-pressed') === 'true'
-        
-        // 点击后要改变
-        if(!pressed){
-            sibling.style.display = 'block'
-        }else{
-            sibling.style.display = 'none'
-        }
-        //设置相反值
-        event.target.setAttribute("aria-pressed",!pressed)
+import baseService from "../../axios/baseService"
+import { useEffect } from "react"
+import { useState } from "react"
 
 
-        // 当折叠回来后，还要控制子元素中的下拉项全部折叠---question
-    }
+//获取导航列表
+const getCurrentMessage = async () => {
+    let list = []
+    await baseService.get("/getKnowledgeTree").then((res)=>{
+        list = res.data
+    })  
+    return list
+}
 
 
-    
+//选择的导航所包含的内容
+const initSelectList= async (levelFlag,id) => {
+     let contentList = []
+     let params = {
+         level:levelFlag,
+         parentId:id
+     }
+     await baseService.post("/management/getList",params).then((res)=>{
+         if(res.data.length>0){
+            contentList = res.data
+         }else{
+            contentList.length = 0
+         }
+     })
+     return contentList
 }
 
 
 export default function ContentMangement(){
+    const [modelTree,setModelTree] = useState([])
+    const [contentList,setContentList] = useState([])
+    useEffect(()=>{
+        getCurrentMessage().then((res)=>{
+            setModelTree(res)
+        })
+    },[])
+
+    //这个目前只能放在函数体内——用到了useState
+    const handleClick=(event)=>{
+        //覆盖bootstrap的下拉菜单显示
+        if(/dropdown-toggle/.test(event.target.className)){
+            //兄弟节点
+            let sibling = event.target.nextSibling
+            // 默认为false
+            let pressed = event.target.getAttribute('aria-pressed') === 'true'
+            // 点击后要改变
+            if(!pressed){
+                sibling.style.display = 'block'
+            }else{
+                sibling.style.display = 'none'
+            }
+            //设置相反值
+            event.target.setAttribute("aria-pressed",!pressed)
+            // 当折叠回来后，还要控制子元素中的下拉项全部折叠---question
+        }
+    
+        //返回导航对应的内容
+        if(/nav-link/.test(event.target.className)){
+            let [levelFlag,id] = event.target.getAttribute('data-nav-index').split('-')
+            initSelectList(levelFlag,id).then((res)=>{
+                setContentList(res)
+            })
+        }
+    }
+    
 
     return (
         <div> 
@@ -39,65 +81,49 @@ export default function ContentMangement(){
 
             <div className={contentMangement.content}>
                 <div className={contentMangement.option_bar1}>
-                    {/* <el-tree :data=modelTree :props="defaultProps" @node-click="handleNodeClick">
-                        </el-tree> */}
-
-
-
-                    {/* 测试区 */}
-                    {/* 竖排 */}
-                    {/*类中的 navbar-expand-lg 控制横竖 */}
                     <nav class="navbar  bg-body-tertiary" id='nav_bar' onClick={handleClick}>
                         <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-                            <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="#">一级A</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">一级B</a>
-                            </li>
-                            {/* 第一个 */}
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" role="button" aria-pressed="false" aria-expanded="false" data-bs-toggle="dropdown" >
-                                一级C
-                                </a>
-                                {/* dropdown-menu-dark */}
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="#">二级c-1</a></li>
-                                    <li><a class="dropdown-item" href="#">二级c-2</a></li>
-                                   
-                                    <li><a class="dropdown-item" href="#">二级c-3</a></li>
-                                </ul>
-                            </li>
-
-
-                            {/* 第二个 */}
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                一级D
-                                </a>
-                                {/* dropdown-menu-dark */}
-                                <ul class="dropdown-menu ">
-                                    <li><a class="dropdown-item" href="#">二级d-1</a></li>
-
-                                    <li class="nav-item dropdown">
-                                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"  aria-pressed="false" aria-expanded="false">
-                                        二级d-2
-                                        </a>
-                                        <ul class="dropdown-menu">
-                                            <li><a class="dropdown-item" href="#">三级d-2-1</a></li>
-                                            <li><a class="dropdown-item" href="#">三级d-2-2</a></li>
-                                            
-                                            <li><a class="dropdown-item" href="#">三级d-2-3</a></li>
-                                        </ul>
-
-                                    </li>
-
-                                    <li><a class="dropdown-item" href="#">二级d-3</a></li>
-                                </ul>
-                            </li>
-
+                            {modelTree.map((item)=>{
+                                if(item.children.length == 0){
+                                    return (
+                                        <li key={item.level+'-'+item.id} class="nav-item">
+                                            <a data-nav-index={item.level+'-'+item.id} class="nav-link active" aria-current="page" href="#">{item.label}</a>
+                                        </li>
+                                    )
+                                }else{
+                                    return (
+                                        <li key={item.level+'-'+item.id} class="nav-item dropdown">
+                                            <a data-nav-index={item.level+'-'+item.id} class="nav-link dropdown-toggle" href="#" role="button" aria-pressed="false" aria-expanded="false" data-bs-toggle="dropdown" >
+                                                {item.label}
+                                            </a>
+                                            {/* dropdown-menu-dark */}
+                                            <ul class="dropdown-menu">
+                                                {item.children.map((item)=>{
+                                                    if(item.children.length == 0){
+                                                        return (<li key={item.level+'-'+item.id}><a data-nav-index={item.level+'-'+item.id} class="dropdown-item nav-link" href="#">{item.label}</a></li>)     
+                                                    }else{
+                                                        return (
+                                                            <li key={item.level+'-'+item.id} class="nav-item dropdown">
+                                                                <a class="nav-link dropdown-toggle" href="#" role="button" aria-pressed="false" aria-expanded="false" data-nav-index={item.level+'-'+item.id} data-bs-toggle="dropdown" >
+                                                                    {item.label}
+                                                                </a>
+                                                                <ul class="dropdown-menu">
+                                                                    {item.children.map((item)=>{
+                                                                        return(
+                                                                            <li key={item.level+'-'+item.id}><a class="dropdown-item nav-link" href="#" data-nav-index={item.level+'-'+item.id}>{item.label}</a></li>
+                                                                        )  
+                                                                    })}
+                                                                </ul>
+                                                            </li>
+                                                        )
+                                                    }
+                                                })}
+                                            </ul>
+                                        </li>
+                                    )
+                                }
+                            })}
                         </ul>
-
                    </nav>
                 </div>
 
@@ -108,22 +134,27 @@ export default function ContentMangement(){
                 <div id="box_1" className={contentMangement.box_1}>
                     <div>
                         {/* onClick={addOrUpdate} */}
-
                         <button type="button" class="btn btn-primary">新增</button>            
                     </div>
 
-
                     <ul>
-                        {/* <li v-for="(item,index) in contentList">
-                            <span style="float: left;">{{index+1}}. {{item.name}}</span>
-                            
-                            <span style="float: right;">
-                                <a @click="addOrUpdate(item.id)" style="color: yellowgreen;margin-right: 5px;">修改</a>
-                                <a @click="deleteItem(item.id)" style="color: red;margin-right: 5px;">删除</a>
-                                <a v-if="treeSelect.levelFlag == 3" @click="contentMangement(item.id)" style="color: green;">详情</a>
-                            </span>
-                        
-                        </li> */}
+                        {contentList.map((item,index)=>{
+                            return (
+                                <li> 
+                                    <span style={{float: 'left'}}>{index+1}. {item.name}</span>
+                                    <span style={{float: 'right'}}>
+
+                                        {/* onClick={addOrUpdate(item.id)} */}
+                                        <a  style={{color: 'yellowgreen',marginRight: '5px'}}>修改</a>
+                                        {/* onClick={deleteItem(item.id)} */}
+                                        <a  style={{color: 'red',marginRight: '5px'}}>删除</a>
+                                        {/* ??????? */}
+                                        {/* onClick={contentMangement(item.id)} */}
+                                        {/* <a v-if="treeSelect.levelFlag == 3"  style={{color: 'green'}}>详情</a> */}
+                                    </span>
+                                </li>
+                            )
+                        })}
                     </ul>
                 </div>
 

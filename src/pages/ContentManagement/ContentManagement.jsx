@@ -33,8 +33,22 @@ const initSelectList= async (levelFlag,id) => {
 
 
 export default function ContentMangement(){
+
+    // 自定义 标签空前缀 类样式
+    const customPreNull  = " " + contentMangement.pre_null
+    //自定义 标签前缀下拉三角🔻 类样式
+    const customPreDropDownToggle  = " " +  contentMangement.dropdown_toggle
+    //自定义 标签前缀右指向三角▶ 类样式
+    const customPreDropEndToggle  = " " +  contentMangement.dropend_toggle
+
+    //需要添加一个条件判断————question 
+    const customPreToggle = customPreDropEndToggle
+    
     const [modelTree,setModelTree] = useState([])
     const [contentList,setContentList] = useState([])
+
+
+
     useEffect(()=>{
         getCurrentMessage().then((res)=>{
             setModelTree(res)
@@ -44,7 +58,7 @@ export default function ContentMangement(){
     //这个目前只能放在函数体内——用到了useState
     const handleClick=(event)=>{
         //覆盖bootstrap的下拉菜单显示
-        if(/dropdown-toggle/.test(event.target.className)){
+        if(event.target.getAttribute("data-bs-toggle") === 'dropdown'){
             //兄弟节点
             let sibling = event.target.nextSibling
             // 默认为false
@@ -80,52 +94,52 @@ export default function ContentMangement(){
             </div>
 
             <div className={contentMangement.content}>
-                <div className={contentMangement.option_bar1}>
-                    <nav class="navbar  bg-body-tertiary" id='nav_bar' onClick={handleClick}>
-                        <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-                            {modelTree.map((item)=>{
-                                if(item.children.length == 0){
-                                    return (
-                                        <li key={item.level+'-'+item.id} class="nav-item">
-                                            <a data-nav-index={item.level+'-'+item.id} class="nav-link active" aria-current="page" href="#">{item.label}</a>
-                                        </li>
-                                    )
-                                }else{
-                                    return (
-                                        <li key={item.level+'-'+item.id} class="nav-item dropdown">
-                                            <a data-nav-index={item.level+'-'+item.id} class="nav-link dropdown-toggle" href="#" role="button" aria-pressed="false" aria-expanded="false" data-bs-toggle="dropdown" >
-                                                {item.label}
-                                            </a>
-                                            {/* dropdown-menu-dark */}
-                                            <ul class="dropdown-menu">
-                                                {item.children.map((item)=>{
-                                                    if(item.children.length == 0){
-                                                        return (<li key={item.level+'-'+item.id}><a data-nav-index={item.level+'-'+item.id} class="dropdown-item nav-link" href="#">{item.label}</a></li>)     
-                                                    }else{
-                                                        return (
-                                                            <li key={item.level+'-'+item.id} class="nav-item dropdown">
-                                                                <a class="nav-link dropdown-toggle" href="#" role="button" aria-pressed="false" aria-expanded="false" data-nav-index={item.level+'-'+item.id} data-bs-toggle="dropdown" >
-                                                                    {item.label}
-                                                                </a>
-                                                                <ul class="dropdown-menu">
-                                                                    {item.children.map((item)=>{
-                                                                        return(
-                                                                            <li key={item.level+'-'+item.id}><a class="dropdown-item nav-link" href="#" data-nav-index={item.level+'-'+item.id}>{item.label}</a></li>
-                                                                        )  
-                                                                    })}
-                                                                </ul>
-                                                            </li>
-                                                        )
-                                                    }
-                                                })}
-                                            </ul>
-                                        </li>
-                                    )
-                                }
-                            })}
-                        </ul>
-                   </nav>
-                </div>
+                {/* 导航 */}
+                <nav className={"navbar ps-2" + " " + contentMangement.navbar }  onClick={handleClick}>
+                    <ul className="navbar-nav">
+                        {modelTree.map((item)=>{
+                            if(item.children.length == 0){
+                                return (
+                                    <li key={item.level+'-'+item.id} className="nav-item">
+                                        <a data-nav-index={item.level+'-'+item.id} className={"nav-link" + customPreNull} aria-current="page" href="#">{item.label}</a>
+                                    </li>
+                                )
+                            }
+                            else{
+                                return (
+                                    <li key={item.level+'-'+item.id} className="nav-item dropdown">
+                                        <a data-nav-index={item.level+'-'+item.id} className={"nav-link"+customPreToggle } href="#" role="button" aria-pressed="false" aria-expanded="false" data-bs-toggle="dropdown" >
+                                            {item.label}
+                                        </a>
+                                        <ul className={"dropdown-menu" + " " + contentMangement.dropdown_menu}>
+                                            {item.children.map((item)=>{
+                                                if(item.children.length == 0){
+                                                    return (<li key={item.level+'-'+item.id}><a data-nav-index={item.level+'-'+item.id} className={"dropdown-item nav-link"+ customPreNull} href="#">{item.label}</a></li>)     
+                                                }
+                                                else{
+                                                    return (
+                                                        <li key={item.level+'-'+item.id} className="nav-item dropdown">
+                                                            <a className={"nav-link"+ customPreToggle} href="#" role="button" aria-pressed="false" aria-expanded="false" data-nav-index={item.level+'-'+item.id} data-bs-toggle="dropdown" >
+                                                                {item.label}
+                                                            </a>
+                                                            <ul className={"dropdown-menu" + " " + contentMangement.dropdown_menu}>
+                                                                {item.children.map((item)=>{
+                                                                    return(
+                                                                        <li key={item.level+'-'+item.id}><a className={"dropdown-item nav-link" + customPreNull} href="#" data-nav-index={item.level+'-'+item.id}>{item.label}</a></li>
+                                                                    )  
+                                                                })}
+                                                            </ul>
+                                                        </li>
+                                                    )
+                                                }
+                                            })}
+                                        </ul>
+                                    </li>
+                                )
+                            }
+                        })}
+                    </ul>
+                </nav>
 
 
                 {/* <!-- 列表增删改 --> */}
@@ -134,7 +148,7 @@ export default function ContentMangement(){
                 <div id="box_1" className={contentMangement.box_1}>
                     <div>
                         {/* onClick={addOrUpdate} */}
-                        <button type="button" class="btn btn-primary">新增</button>            
+                        <button type="button" className="btn btn-primary">新增</button>            
                     </div>
 
                     <ul>

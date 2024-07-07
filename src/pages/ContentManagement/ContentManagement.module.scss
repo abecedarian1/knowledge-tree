@@ -18,14 +18,54 @@ $content-height:calc(100vh - $topBarHeight - $userBarHeight - $footerHeight);
     min-height: $content-height;
     background-color:white;
 
-    .option_bar1{
+    .navbar{
         position: relative;
         box-sizing: border-box;
         width:25%;
-        overflow: auto;
-        background-color:#FBEDF7;        
-        .el-tree{
-            background-color:#FBEDF7;
+        background-color:#FBEDF7; 
+
+        // 覆盖bootstrap样式
+        flex-direction: column;
+        align-items: flex-start;
+
+        // 空前缀
+        .pre_null::before{
+            display: inline-block;
+            margin:0  0.255em;
+            vertical-align: 0.255em;
+            content: "";
+            border: 0.3em solid transparent;
+
+        }
+        //🔻前缀
+        .dropdown_toggle::before{
+            display: inline-block;
+            margin:0 0.255em;
+            vertical-align: 0.255em;
+            content: "";
+            border-top: 0.3em solid;
+            border-right: 0.3em solid transparent;
+            border-bottom: 0;
+            border-left: 0.3em solid transparent;
+        }
+
+        // ▶前缀
+        .dropend_toggle::before{
+            display: inline-block;
+            margin:0 0.255em;
+            vertical-align: 0.255em;
+            content: "";
+            border-top: 0.3em solid transparent;
+            border-right: 0;
+            border-bottom: 0.3em solid transparent;
+            border-left: 0.3em solid;
+        }
+
+        .dropdown_menu{
+            margin-left: 0.8em;
+            border: none;
+            background-color:#FBEDF7; 
+
         }
     }
         

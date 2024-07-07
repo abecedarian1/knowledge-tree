@@ -4,6 +4,17 @@ import { useEffect } from "react"
 import { useState } from "react"
 
 
+// 自定义 标签空前缀 类样式
+const customPreNull  = " " + contentMangement.pre_null
+//自定义 标签前缀下拉三角🔻 类样式
+const customPreDropDownToggle  = " " +  contentMangement.dropdown_toggle
+//自定义 标签前缀右指向三角▶ 类样式
+const customPreDropEndToggle  = " " +  contentMangement.dropend_toggle
+
+//需要添加一个条件判断————question 
+const customPreToggle = customPreDropEndToggle
+
+
 //获取导航列表
 const getCurrentMessage = async () => {
     let list = []
@@ -13,75 +24,110 @@ const getCurrentMessage = async () => {
     return list
 }
 
-
-//选择的导航所包含的内容
-const initSelectList= async (levelFlag,id) => {
-     let contentList = []
+//选择的导航元素所包含的列表
+const getNavItemList= async (levelFlag,id) => {
+     let navItemList = []
      let params = {
          level:levelFlag,
          parentId:id
      }
      await baseService.post("/management/getList",params).then((res)=>{
          if(res.data.length>0){
-            contentList = res.data
-         }else{
-            contentList.length = 0
+            navItemList = res.data
          }
      })
-     return contentList
+     return navItemList
 }
 
 
+//覆盖bootstrap的下拉菜单显示
+function useSubNavShowOrHide(event){
+    if(event.target.getAttribute("data-bs-toggle") === 'dropdown'){
+        //兄弟节点
+        let sibling = event.target.nextSibling
+        // 默认为false
+        let pressed = event.target.getAttribute('aria-pressed') === 'true'
+        // 点击后要改变
+        if(!pressed){
+            sibling.style.display = 'block'
+        }else{
+            sibling.style.display = 'none'
+        }
+        //设置相反值
+        event.target.setAttribute("aria-pressed",!pressed)
+        // 当折叠回来后，还要控制子元素中的下拉项全部折叠---question
+    }
+}
+
+// 不可以作为自定义hook
+// Nav中的多层循环下拉
+function subNavDomLoop(item){
+    return (
+        <li key={item.level+'-'+item.id} className="nav-item dropdown">
+            <a data-nav-index={item.level+'-'+item.id} className={"nav-link"+customPreToggle } href="#" role="button" aria-pressed="false" aria-expanded="false" data-bs-toggle="dropdown" >
+                {item.label}
+            </a>
+            {/* // 下拉 */}
+            <ul className={"dropdown-menu" + " " + contentMangement.dropdown_menu}>
+                {item.children.map((item)=>{
+                    if( !item.children || item.children.length == 0){
+                        return (<li key={item.level+'-'+item.id}><a data-nav-index={item.level+'-'+item.id} className={"dropdown-item nav-link"+ customPreNull} href="#">{item.label}</a></li>)     
+                    }
+                    else{
+                        return (
+                            subNavDomLoop(item)
+                        )
+                    }
+                })}
+            </ul>
+        </li>
+    )
+}
+
+
+
 export default function ContentMangement(){
-
-    // 自定义 标签空前缀 类样式
-    const customPreNull  = " " + contentMangement.pre_null
-    //自定义 标签前缀下拉三角🔻 类样式
-    const customPreDropDownToggle  = " " +  contentMangement.dropdown_toggle
-    //自定义 标签前缀右指向三角▶ 类样式
-    const customPreDropEndToggle  = " " +  contentMangement.dropend_toggle
-
-    //需要添加一个条件判断————question 
-    const customPreToggle = customPreDropEndToggle
-    
-    const [modelTree,setModelTree] = useState([])
-    const [contentList,setContentList] = useState([])
-
-
+    const [navTree,setNavTree] = useState([])
+    const [navItemList,setNavItemList] = useState([])
 
     useEffect(()=>{
         getCurrentMessage().then((res)=>{
-            setModelTree(res)
+            setNavTree(res)
         })
     },[])
 
-    //这个目前只能放在函数体内——用到了useState
-    const handleClick=(event)=>{
-        //覆盖bootstrap的下拉菜单显示
-        if(event.target.getAttribute("data-bs-toggle") === 'dropdown'){
-            //兄弟节点
-            let sibling = event.target.nextSibling
-            // 默认为false
-            let pressed = event.target.getAttribute('aria-pressed') === 'true'
-            // 点击后要改变
-            if(!pressed){
-                sibling.style.display = 'block'
-            }else{
-                sibling.style.display = 'none'
-            }
-            //设置相反值
-            event.target.setAttribute("aria-pressed",!pressed)
-            // 当折叠回来后，还要控制子元素中的下拉项全部折叠---question
-        }
+    const useHandleClick=(event)=>{
+        // 自定义hook必须在hook或者组件函数里边用
+        useSubNavShowOrHide(event)
     
         //返回导航对应的内容
         if(/nav-link/.test(event.target.className)){
             let [levelFlag,id] = event.target.getAttribute('data-nav-index').split('-')
-            initSelectList(levelFlag,id).then((res)=>{
-                setContentList(res)
+            getNavItemList(levelFlag,id).then((res)=>{
+                setNavItemList(res)
             })
         }
     }
+
+
+    // ------------弹窗监听事件————只能这样写
+    const addOrUpdateModal = document.getElementById('addOrUpdateModal')
+    addOrUpdateModal && addOrUpdateModal.addEventListener('show.bs.modal', event => {
+        // Button that triggered the modal
+        const button = event.relatedTarget
+        // Extract info from data-bs-* attributes
+        const recipient = button.getAttribute('data-bs-whatever')
+        // If necessary, you could initiate an AJAX request here
+        // and then do the updating in a callback.
+        //
+        // Update the modal's content.
+        // const modalTitle = addOrUpdateModal.querySelector('.modal-title')
+        const modalBodyInput = addOrUpdateModal.querySelector('.modal-body input')
+
+        // modalTitle.textContent = `New message to ${recipient}`
+        modalBodyInput.value = recipient
+    })
+
     
 
     return (
@@ -94,11 +140,11 @@ export default function ContentMangement(){
             </div>
 
             <div className={contentMangement.content}>
-                {/* 导航 */}
-                <nav className={"navbar ps-2" + " " + contentMangement.navbar }  onClick={handleClick}>
+                <nav id="nav" className={"navbar ps-2" + " " + contentMangement.navbar } onClick={useHandleClick} >
                     <ul className="navbar-nav">
-                        {modelTree.map((item)=>{
+                        {navTree.map((item)=>{
                             if(item.children.length == 0){
+                                // 导航元素
                                 return (
                                     <li key={item.level+'-'+item.id} className="nav-item">
                                         <a data-nav-index={item.level+'-'+item.id} className={"nav-link" + customPreNull} aria-current="page" href="#">{item.label}</a>
@@ -107,34 +153,7 @@ export default function ContentMangement(){
                             }
                             else{
                                 return (
-                                    <li key={item.level+'-'+item.id} className="nav-item dropdown">
-                                        <a data-nav-index={item.level+'-'+item.id} className={"nav-link"+customPreToggle } href="#" role="button" aria-pressed="false" aria-expanded="false" data-bs-toggle="dropdown" >
-                                            {item.label}
-                                        </a>
-                                        <ul className={"dropdown-menu" + " " + contentMangement.dropdown_menu}>
-                                            {item.children.map((item)=>{
-                                                if(item.children.length == 0){
-                                                    return (<li key={item.level+'-'+item.id}><a data-nav-index={item.level+'-'+item.id} className={"dropdown-item nav-link"+ customPreNull} href="#">{item.label}</a></li>)     
-                                                }
-                                                else{
-                                                    return (
-                                                        <li key={item.level+'-'+item.id} className="nav-item dropdown">
-                                                            <a className={"nav-link"+ customPreToggle} href="#" role="button" aria-pressed="false" aria-expanded="false" data-nav-index={item.level+'-'+item.id} data-bs-toggle="dropdown" >
-                                                                {item.label}
-                                                            </a>
-                                                            <ul className={"dropdown-menu" + " " + contentMangement.dropdown_menu}>
-                                                                {item.children.map((item)=>{
-                                                                    return(
-                                                                        <li key={item.level+'-'+item.id}><a className={"dropdown-item nav-link" + customPreNull} href="#" data-nav-index={item.level+'-'+item.id}>{item.label}</a></li>
-                                                                    )  
-                                                                })}
-                                                            </ul>
-                                                        </li>
-                                                    )
-                                                }
-                                            })}
-                                        </ul>
-                                    </li>
+                                    subNavDomLoop(item)
                                 )
                             }
                         })}
@@ -147,12 +166,19 @@ export default function ContentMangement(){
                 {/* v-if="!showContent"  */}
                 <div id="box_1" className={contentMangement.box_1}>
                     <div>
+
                         {/* onClick={addOrUpdate} */}
-                        <button type="button" className="btn btn-primary">新增</button>            
+                        <button  
+                            type="button" 
+                            class="btn btn-primary" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#addOrUpdateModal" 
+                            data-bs-whatever="传递的数据">新增</button>
+
                     </div>
 
                     <ul>
-                        {contentList.map((item,index)=>{
+                        {navItemList.map((item,index)=>{
                             return (
                                 <li> 
                                     <span style={{float: 'left'}}>{index+1}. {item.name}</span>
@@ -189,6 +215,48 @@ export default function ContentMangement(){
 
 
             </div>
+
+
+
+
+            {/* ---------------------------------------------------------------- */}
+
+
+            {/* data-bs-keyboard="false"  是否快捷键退出 */}
+            {/* 新增/修改弹窗 */}
+            <div  class="modal fade" id="addOrUpdateModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="exampleModalLabel">新增</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="mb-3">
+                                    <label for="recipient-name" class="col-form-label">上级标题</label>
+                                    <input type="text" class="form-control" id="recipient-name"/>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="message-text" class="col-form-label">标题</label>
+                                    <input type="text" class="form-control" id="message-text"/>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="message-text" class="col-form-label">路由</label>
+                                    <input type="text" class="form-control" id="message-text2"/>
+                                </div>
+                                
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-primary">确定</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
 
 
         {/* <!-- title="新增"  --> */}

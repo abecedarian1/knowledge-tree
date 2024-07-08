@@ -17,6 +17,6 @@
 >
 > npm install bootstrap@5.3.3
 >
-> 
+> npm install @popperjs/core              # bootstrap5 的依赖项
 >
 >  

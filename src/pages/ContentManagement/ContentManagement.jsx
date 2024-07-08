@@ -1,8 +1,11 @@
+
+import { Modal } from 'bootstrap'; 
+
 import contentManagement from "./ContentManagement.module.scss"
 import baseService from "../../axios/baseService"
 import { useEffect } from "react"
 import { useState } from "react"
-import $ from 'jquery'
+// import $ from 'jquery'
 
 // 自定义 标签空前缀 类样式
 const customPreNull  = " " + contentManagement.pre_null
@@ -91,6 +94,7 @@ export default function ContentMangement(){
     const [navItemList,setNavItemList] = useState([])
     const [globalLevelFlag,setGlobalLevelFlag] = useState('')
     const [globalParentId,setGlobalParentId] = useState('')
+    const [globalItemId,setGlobalItemId] = useState('')
 
 
     useEffect(()=>{
@@ -118,77 +122,105 @@ export default function ContentMangement(){
     }
 
 
-    // ------------弹窗监听事件————只能这样写
-    const addOrUpdateModal = document.getElementById('addOrUpdateModal')
-    // const addOrUpdateModal = $('#addOrUpdateModal')
-    addOrUpdateModal && addOrUpdateModal.addEventListener('show.bs.modal',  (event) => {
-        
-        console.log('event---------弹窗',event)
-        // addOrUpdateModal.dispose()
+    // window.onload = function(){  //不能加这个，表单数据出不来？？？
+        // ------------弹窗监听事件————只能这样写
+        const addOrUpdateModal = document.getElementById('addOrUpdateModal')
+        // const addOrUpdateModal = $('#addOrUpdateModal')
+        addOrUpdateModal && addOrUpdateModal.addEventListener('show.bs.modal',  (event) => {
+            
+            console.log('event---------弹窗',event)
+            // addOrUpdateModal.dispose()
 
-        let id=''
-        let levelFlag = globalLevelFlag
-        let parentId  = globalParentId
-
-
-        // 触发弹窗的按钮
-        const button = event.relatedTarget
-        const modalTitle = addOrUpdateModal.querySelector('.modal-title')
-        if(button.innerText === '新增'){
-            modalTitle.textContent = '新增'
-            id=''
-        }else if(button.innerText === '修改'){
-            modalTitle.textContent = '修改'
-            id = button.getAttribute('data-item-id')
-        }
-
-        // modalTitle.textContent = `New message to ${recipient}`
-        
+            let id=''
+            let levelFlag = globalLevelFlag
+            let parentId  = globalParentId
 
 
-        // 为什么会触发8次 甚至16次  ：4次失败，4次成功  ？？question！！！！
-        // 选择的导航元素 子层级越高，调用次数越多
-        // 而且state中的状态会回滚一下 ？？？？？？？？？？？ //-_-\\
-        console.log('leve---id',levelFlag,parentId)
-        // 接口调用里边也不能直接使用useState的内容
-         baseService.post("/management/getManagementContent?level="+levelFlag+'&id='+id+'&parentId='+parentId).then((res)=>{
-            console.log('调用接口回显的数据',res.data)
-            let data = res.data
+            // 触发弹窗的按钮
+            const button = event.relatedTarget
+            const modalTitle = addOrUpdateModal.querySelector('.modal-title')
+            if(button.innerText === '新增'){
+                modalTitle.textContent = '新增'
+                id=''
+                setGlobalItemId(id)
+            }else if(button.innerText === '修改'){
+                modalTitle.textContent = '修改'
+                id = button.getAttribute('data-item-id')
+                setGlobalItemId(id)
+            }
+
+            // modalTitle.textContent = `New message to ${recipient}`
             
 
-            addOrUpdateModal.querySelector('#parentName').value = data.parentName
-            addOrUpdateModal.querySelector('#itemTitle').value = data.name
-            addOrUpdateModal.querySelector('#itemUrl').value = data.url
-        }).catch(err=>{
-            console.log('err--------',err)
+
+            // 为什么会触发8次 甚至16次  ：4次失败，4次成功  ？？question！！！！
+            // 选择的导航元素 子层级越高，调用次数越多
+            // 而且state中的状态会回滚一下 ？？？？？？？？？？？ //-_-\\
+            console.log('leve---id',levelFlag,parentId)
+            // 接口调用里边也不能直接使用useState的内容
+            baseService.post("/management/getManagementContent?level="+levelFlag+'&id='+id+'&parentId='+parentId).then((res)=>{
+                console.log('调用接口回显的数据',res.data)
+                let data = res.data
+                
+
+                addOrUpdateModal.querySelector('#parentName').value = data.parentName
+                addOrUpdateModal.querySelector('#itemTitle').value = data.name
+                addOrUpdateModal.querySelector('#itemUrl').value = data.url
+            }).catch(err=>{
+                console.log('err--------',err)
+            })
+
         })
 
-    })
+        // 提交事件
+        if(addOrUpdateModal){  //这个条件必须加 否则报错
+            const modalInstance = new Modal(addOrUpdateModal);
 
-    //监听提交事件
-    // addOrUpdateModal && addOrUpdateModal.querySelector("#confirm").addEventListener('click',()=>{
-    //     console.log('提交事件-------')
+            addOrUpdateModal.addEventListener('hidde.bs.modal',  (event) => {
+                // 取消弹窗的时候移除表单上存储的数据
+                modalInstance.dispose()
+            })
 
-    //     // hide(addOrUpdateModal)
-    //     // addOrUpdateModal.onHide()
+            // 监听表单提交事件 新增/修改 ————修改新增的时候一次性添加了好多数据————question__相当于重复执行了好多次
+            // 因该是setState()重新更新dom的原因 ？？？？？
+            addOrUpdateModal.querySelector("#confirm").addEventListener('click',()=>{
+                console.log('提交事件-------')
 
-    // })
+                let inputName = addOrUpdateModal.querySelector('#itemTitle').value
+                let inputUrl = addOrUpdateModal.querySelector('#itemUrl').value
 
+                // 提交数据
+                let params = {}
+                // treeSelect  ID  LEVEL 根据这两个确认调用哪个接口
+                params = {
+                    level:globalLevelFlag,
+                    id:globalItemId,
+                    name:inputName,
+                    url:inputUrl,
+                    parentId:globalParentId
+                }
+            
+                baseService.post("/management/addOrUpdate",params).then((res)=>{
+                    if(res.data == 'success'){
+                        // // 更新已选择的数据列表修改内容
+                        // initSelectList();
+                        // // 重新刷新Tree页面
+                        // initTreeList();
+        
+                        // ElMessage({
+                        //     type:'success',
+                        //     message:'成功'
+                        // })
 
-    // addOrUpdateModal && addOrUpdateModal.addEventListener('hidde.bs.modal',  (event) => {
-    //     console.log('hide------event',event)
-    //     return false
-    //     // ???
-    //     // addOrUpdateModal.dispose()
+                         // 取消弹窗  ---没有成功？？？？ 单次可以，可能是 fade类名的原因
+                        //  弹窗没了，背景没关 -取消也是
+                        modalInstance.hide()
+                    }
+                })               
+            })
+        }
+    // }
 
-    // })
-
-
-    
-
-
-
-    
 
     return (
         <div> 
@@ -222,14 +254,11 @@ export default function ContentMangement(){
                 {/* v-if="!showContent"  */}
                 <div id="box_1" className={contentManagement.box_1}>
                     <div>
-
-                        {/* onClick={addOrUpdate} */}
                         <button  
                             type="button" 
                             className="btn btn-primary" 
                             data-bs-toggle="modal" 
                             data-bs-target="#addOrUpdateModal">新增</button>
-
                     </div>
 
                     <ul>
@@ -238,19 +267,15 @@ export default function ContentMangement(){
                                 <li key={item.id}> 
                                     <span style={{float: 'left'}}>{index+1}. {item.name}</span>
                                     <span style={{float: 'right'}}>
-
-                                        {/* onClick={addOrUpdate(item.id)} */}
-                                        {/* <a  style={{color: 'yellowgreen',marginRight: '5px'}}>修改</a> */}
-                                        
                                         <a type="button" data-item-id={item.id} data-bs-toggle="modal"  data-bs-target="#addOrUpdateModal" style={{color: 'yellowgreen',marginRight: '5px'}}>修改</a>
-
-
 
                                         {/* onClick={deleteItem(item.id)} */}
                                         <a  style={{color: 'red',marginRight: '5px'}}>删除</a>
                                         {/* ??????? */}
                                         {/* onClick={contentManagement(item.id)} */}
-                                        {/* <a v-if="treeSelect.levelFlag == 3"  style={{color: 'green'}}>详情</a> */}
+
+
+                                        {globalLevelFlag ==3 && (<a style={{color: 'green'}}>详情</a>)}
                                     </span>
                                 </li>
                             )
@@ -277,9 +302,7 @@ export default function ContentMangement(){
             </div>
 
 
-
             {/* ---------------------------------------------------------------- */}
-
 
             {/* data-bs-keyboard="false"  是否快捷键退出 */}
             {/* 新增/修改弹窗 */}
@@ -317,39 +340,6 @@ export default function ContentMangement(){
                     </div>
                 </div>
             </div>
-
-
-
-        {/* <!-- title="新增"  --> */}
-        {/* <el-dialog 
-            v-model="openVisible" 
-            :title="form.id ? '修改' : '新增'" 
-            width="55%" 
-        >
-            <el-form :model="form">
-                <el-form-item label="上级标题">
-                    <el-input disabled v-model="form.parentName" placeholder="上级标题"></el-input>
-                </el-form-item>
-                
-                <el-form-item label="标题">
-                    <el-input v-model="form.name" placeholder="标题"></el-input>
-                </el-form-item>
-                
-                <el-form-item label="路由">
-                    <el-input v-model="form.url" placeholder="路由"></el-input>
-                </el-form-item>
-            </el-form>
-
-            <template #footer>
-                <span className={contentManagement.dialog_footer}>
-                    <el-button onClick={openVisible = false}>取消</el-button>
-                    <el-button type="primary" onClick={submitConfirm}>
-                      确定
-                    </el-button>
-                  </span>
-            </template>
-        </el-dialog> */}
-
     </div>
     )
 }

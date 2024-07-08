@@ -1,15 +1,15 @@
-import contentMangement from "./ContentManagement.module.scss"
+import contentManagement from "./ContentManagement.module.scss"
 import baseService from "../../axios/baseService"
 import { useEffect } from "react"
 import { useState } from "react"
-
+import $ from 'jquery'
 
 // 自定义 标签空前缀 类样式
-const customPreNull  = " " + contentMangement.pre_null
+const customPreNull  = " " + contentManagement.pre_null
 //自定义 标签前缀下拉三角🔻 类样式
-const customPreDropDownToggle  = " " +  contentMangement.dropdown_toggle
+const customPreDropDownToggle  = " " +  contentManagement.dropdown_toggle
 //自定义 标签前缀右指向三角▶ 类样式
-const customPreDropEndToggle  = " " +  contentMangement.dropend_toggle
+const customPreDropEndToggle  = " " +  contentManagement.dropend_toggle
 
 //需要添加一个条件判断————question 
 const customPreToggle = customPreDropEndToggle
@@ -68,7 +68,7 @@ function subNavDomLoop(item){
                 {item.label}
             </a>
             {/* // 下拉 */}
-            <ul className={"dropdown-menu" + " " + contentMangement.dropdown_menu}>
+            <ul className={"dropdown-menu" + " " + contentManagement.dropdown_menu}>
                 {item.children.map((item)=>{
                     if( !item.children || item.children.length == 0){
                         return (<li key={item.level+'-'+item.id}><a data-nav-index={item.level+'-'+item.id} className={"dropdown-item nav-link"+ customPreNull} href="#">{item.label}</a></li>)     
@@ -89,6 +89,9 @@ function subNavDomLoop(item){
 export default function ContentMangement(){
     const [navTree,setNavTree] = useState([])
     const [navItemList,setNavItemList] = useState([])
+    const [globalLevelFlag,setGlobalLevelFlag] = useState('')
+    const [globalParentId,setGlobalParentId] = useState('')
+
 
     useEffect(()=>{
         getCurrentMessage().then((res)=>{
@@ -96,14 +99,19 @@ export default function ContentMangement(){
         })
     },[])
 
-    const useHandleClick=(event)=>{
-        // 自定义hook必须在hook或者组件函数里边用
+    const useNavHandleClick=(event)=>{
+        // 自定义hook必须在hook里边用??
         useSubNavShowOrHide(event)
-    
         //返回导航对应的内容
         if(/nav-link/.test(event.target.className)){
-            let [levelFlag,id] = event.target.getAttribute('data-nav-index').split('-')
-            getNavItemList(levelFlag,id).then((res)=>{
+
+            console.log('调用了')
+            let [levelFlag,parentId] = event.target.getAttribute('data-nav-index').split('-')
+            setGlobalLevelFlag(levelFlag)
+            setGlobalParentId(parentId)
+
+            //这里边的参数不能使用useState中的值————第一次出不来
+            getNavItemList(levelFlag,parentId).then((res)=>{
                 setNavItemList(res)
             })
         }
@@ -112,39 +120,87 @@ export default function ContentMangement(){
 
     // ------------弹窗监听事件————只能这样写
     const addOrUpdateModal = document.getElementById('addOrUpdateModal')
-    addOrUpdateModal && addOrUpdateModal.addEventListener('show.bs.modal', event => {
-        // Button that triggered the modal
+    // const addOrUpdateModal = $('#addOrUpdateModal')
+    addOrUpdateModal && addOrUpdateModal.addEventListener('show.bs.modal',  (event) => {
+        
+        console.log('event---------弹窗',event)
+        // addOrUpdateModal.dispose()
+
+        let id=''
+        let levelFlag = globalLevelFlag
+        let parentId  = globalParentId
+
+
+        // 触发弹窗的按钮
         const button = event.relatedTarget
-        // Extract info from data-bs-* attributes
-        const recipient = button.getAttribute('data-bs-whatever')
-        // If necessary, you could initiate an AJAX request here
-        // and then do the updating in a callback.
-        //
-        // Update the modal's content.
-        // const modalTitle = addOrUpdateModal.querySelector('.modal-title')
-        const modalBodyInput = addOrUpdateModal.querySelector('.modal-body input')
+        const modalTitle = addOrUpdateModal.querySelector('.modal-title')
+        if(button.innerText === '新增'){
+            modalTitle.textContent = '新增'
+            id=''
+        }else if(button.innerText === '修改'){
+            modalTitle.textContent = '修改'
+            id = button.getAttribute('data-item-id')
+        }
 
         // modalTitle.textContent = `New message to ${recipient}`
-        modalBodyInput.value = recipient
+        
+
+
+        // 为什么会触发8次 甚至16次  ：4次失败，4次成功  ？？question！！！！
+        // 选择的导航元素 子层级越高，调用次数越多
+        // 而且state中的状态会回滚一下 ？？？？？？？？？？？ //-_-\\
+        console.log('leve---id',levelFlag,parentId)
+        // 接口调用里边也不能直接使用useState的内容
+         baseService.post("/management/getManagementContent?level="+levelFlag+'&id='+id+'&parentId='+parentId).then((res)=>{
+            console.log('调用接口回显的数据',res.data)
+            let data = res.data
+            
+
+            addOrUpdateModal.querySelector('#parentName').value = data.parentName
+            addOrUpdateModal.querySelector('#itemTitle').value = data.name
+            addOrUpdateModal.querySelector('#itemUrl').value = data.url
+        }).catch(err=>{
+            console.log('err--------',err)
+        })
+
     })
+
+    //监听提交事件
+    // addOrUpdateModal && addOrUpdateModal.querySelector("#confirm").addEventListener('click',()=>{
+    //     console.log('提交事件-------')
+
+    //     // hide(addOrUpdateModal)
+    //     // addOrUpdateModal.onHide()
+
+    // })
+
+
+    // addOrUpdateModal && addOrUpdateModal.addEventListener('hidde.bs.modal',  (event) => {
+    //     console.log('hide------event',event)
+    //     return false
+    //     // ???
+    //     // addOrUpdateModal.dispose()
+
+    // })
+
+
+    
+
+
 
     
 
     return (
         <div> 
-            <div className={contentMangement.user_bar}>
-                <a style={{textDecoration: 'none',color:'#335f5b',marginLeft: '20px',float: 'left'}} href="/">
-                    返回
-                </a>
+            <div className={contentManagement.user_bar}>
+                <a style={{textDecoration: 'none',color:'#335f5b',marginLeft: '20px',float: 'left'}} href="/">返回</a>
                 <div style={{textAlign:'center'}}><a style={{fontSize:'30px',fontWeight: 'bolder'}}>内容管理</a></div>
             </div>
-
-            <div className={contentMangement.content}>
-                <nav id="nav" className={"navbar ps-2" + " " + contentMangement.navbar } onClick={useHandleClick} >
+            <div className={contentManagement.content}>
+                <nav id="nav" className={"navbar ps-2" + " " + contentManagement.navbar } onClick={useNavHandleClick} >
                     <ul className="navbar-nav">
                         {navTree.map((item)=>{
                             if(item.children.length == 0){
-                                // 导航元素
                                 return (
                                     <li key={item.level+'-'+item.id} className="nav-item">
                                         <a data-nav-index={item.level+'-'+item.id} className={"nav-link" + customPreNull} aria-current="page" href="#">{item.label}</a>
@@ -164,32 +220,36 @@ export default function ContentMangement(){
                 {/* <!-- 列表增删改 --> */}
 
                 {/* v-if="!showContent"  */}
-                <div id="box_1" className={contentMangement.box_1}>
+                <div id="box_1" className={contentManagement.box_1}>
                     <div>
 
                         {/* onClick={addOrUpdate} */}
                         <button  
                             type="button" 
-                            class="btn btn-primary" 
+                            className="btn btn-primary" 
                             data-bs-toggle="modal" 
-                            data-bs-target="#addOrUpdateModal" 
-                            data-bs-whatever="传递的数据">新增</button>
+                            data-bs-target="#addOrUpdateModal">新增</button>
 
                     </div>
 
                     <ul>
                         {navItemList.map((item,index)=>{
                             return (
-                                <li> 
+                                <li key={item.id}> 
                                     <span style={{float: 'left'}}>{index+1}. {item.name}</span>
                                     <span style={{float: 'right'}}>
 
                                         {/* onClick={addOrUpdate(item.id)} */}
-                                        <a  style={{color: 'yellowgreen',marginRight: '5px'}}>修改</a>
+                                        {/* <a  style={{color: 'yellowgreen',marginRight: '5px'}}>修改</a> */}
+                                        
+                                        <a type="button" data-item-id={item.id} data-bs-toggle="modal"  data-bs-target="#addOrUpdateModal" style={{color: 'yellowgreen',marginRight: '5px'}}>修改</a>
+
+
+
                                         {/* onClick={deleteItem(item.id)} */}
                                         <a  style={{color: 'red',marginRight: '5px'}}>删除</a>
                                         {/* ??????? */}
-                                        {/* onClick={contentMangement(item.id)} */}
+                                        {/* onClick={contentManagement(item.id)} */}
                                         {/* <a v-if="treeSelect.levelFlag == 3"  style={{color: 'green'}}>详情</a> */}
                                     </span>
                                 </li>
@@ -201,13 +261,13 @@ export default function ContentMangement(){
 
                 {/* <!-- 上下两个div用v-if控制 -->
                 <!-- 富文本编辑器 --> */}
-                {/* <div v-else  className={contentMangement.box_1}> 
+                {/* <div v-else  className={contentManagement.box_1}> 
                     <div>
                         <el-button onClick={saveContent} type="primary" style={{float: 'right'}}>保存</el-button>
                     </div>
                     <!-- 标题 -->
                     <h3 style={{textAlign: 'center',width: '100%'}}>{{detailContent.title}}</h3>
-                    <div className={contentMangement.app_container} style={{width: '100%',height: '100%'}}>
+                    <div className={contentManagement.app_container} style={{width: '100%',height: '100%'}}>
                         <editor  id="tinymce" v-model="detailContent.content" :init="init" > </editor>
                     </div>
                 </div> */}
@@ -218,40 +278,41 @@ export default function ContentMangement(){
 
 
 
-
             {/* ---------------------------------------------------------------- */}
 
 
             {/* data-bs-keyboard="false"  是否快捷键退出 */}
             {/* 新增/修改弹窗 */}
-            <div  class="modal fade" id="addOrUpdateModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="exampleModalLabel">新增</h1>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div  className="modal fade" id="addOrUpdateModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h1 className="modal-title fs-5" id="exampleModalLabel">新增</h1>
+                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="modal-body">
+                        <div className="modal-body">
                             <form>
-                                <div class="mb-3">
-                                    <label for="recipient-name" class="col-form-label">上级标题</label>
-                                    <input type="text" class="form-control" id="recipient-name"/>
+                                <div className="mb-3">
+                                    <label for="parentName" className="col-form-label">上级标题</label>
+                                    <input type="text"  className="form-control" id="parentName"/>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label for="message-text" class="col-form-label">标题</label>
-                                    <input type="text" class="form-control" id="message-text"/>
+                                <div className="mb-3">
+                                    <label for="itemTitle" className="col-form-label">标题</label>
+                                    <input type="text" className="form-control" id="itemTitle"/>
                                 </div>
-                                <div class="mb-3">
-                                    <label for="message-text" class="col-form-label">路由</label>
-                                    <input type="text" class="form-control" id="message-text2"/>
+                                <div className="mb-3">
+                                    <label for="itemUrl" className="col-form-label">路由</label>
+                                    <input type="text" className="form-control" id="itemUrl"/>
                                 </div>
                                 
                             </form>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                            <button type="button" class="btn btn-primary">确定</button>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                            {/* 在这里添加事件 */}
+                            {/* data-bs-target="#exampleModalToggle2" 另一个modal上的id */}
+                            <button id="confirm" type="button" className="btn btn-primary">确定</button>
                         </div>
                     </div>
                 </div>
@@ -280,7 +341,7 @@ export default function ContentMangement(){
             </el-form>
 
             <template #footer>
-                <span className={contentMangement.dialog_footer}>
+                <span className={contentManagement.dialog_footer}>
                     <el-button onClick={openVisible = false}>取消</el-button>
                     <el-button type="primary" onClick={submitConfirm}>
                       确定

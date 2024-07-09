@@ -92,135 +92,126 @@ function subNavDomLoop(item){
 export default function ContentMangement(){
     const [navTree,setNavTree] = useState([])
     const [navItemList,setNavItemList] = useState([])
-    const [globalLevelFlag,setGlobalLevelFlag] = useState('')
-    const [globalParentId,setGlobalParentId] = useState('')
-    const [globalItemId,setGlobalItemId] = useState('')
-
+    const [selectNavItemMsg,setSelectNavItemMsg] = useState({levelFlag:'',parentId:'',itemId:''})
 
     useEffect(()=>{
         getCurrentMessage().then((res)=>{
             setNavTree(res)
         })
-    },[])
+        console.log('selectNavItemMsg',selectNavItemMsg)
+        // 放在useEffect（组件挂载）中可以保证在DOM加载完成后获取到元素内容
+        const addOrUpdateModal = document.getElementById('addOrUpdateModal')
+
+        
+        const modalInstance = addOrUpdateModal && new Modal(addOrUpdateModal);
+        
+
+
+        //弹窗点击显示事件
+        const handleModalClickEvent= async (event)=>{
+            let id=''
+            let levelFlag = selectNavItemMsg.levelFlag
+            let parentId  = selectNavItemMsg.parentId
+            // 触发弹窗的按钮
+            const button = event.relatedTarget
+            const modalTitle = addOrUpdateModal.querySelector('.modal-title')
+            if(button.innerText === '新增'){
+                modalTitle.textContent = '新增'
+                setSelectNavItemMsg({...selectNavItemMsg,itemId:''})
+            }else if(button.innerText === '修改'){
+                modalTitle.textContent = '修改'
+                id = button.getAttribute('data-item-id')
+                setSelectNavItemMsg({...selectNavItemMsg,itemId:id})
+            }
+            await baseService.post("/management/getManagementContent?level="+levelFlag+'&id='+id+'&parentId='+parentId).then((res)=>{
+                let data = res.data
+                addOrUpdateModal.querySelector('#parentName').value = data.parentName
+                addOrUpdateModal.querySelector('#itemTitle').value = data.name
+                addOrUpdateModal.querySelector('#itemUrl').value = data.url
+            }).catch(err=>{console.log(err)})
+        }
+ 
+        // 表单提交
+        const submitFormMsg =()=>{
+            console.log('提交事件-------')
+
+            let inputName = addOrUpdateModal.querySelector('#itemTitle').value
+            let inputUrl = addOrUpdateModal.querySelector('#itemUrl').value
+            let params = {}
+            params = {
+                level:selectNavItemMsg.levelFlag,
+                id:selectNavItemMsg.itemId,
+                name:inputName,
+                url:inputUrl,
+                parentId:selectNavItemMsg.parentId
+            }
+        
+            // 提交数据
+            baseService.post("/management/addOrUpdate",params).then((res)=>{
+                if(res.data == 'success'){
+
+
+                    // ？？？？？？？？？？？？？/
+                    // // 更新已选择的数据列表修改内容
+                    // initSelectList();
+                    // // 重新刷新Tree页面
+                    // initTreeList();
+    
+                    // ElMessage({
+                    //     type:'success',
+                    //     message:'成功'
+                    // })
+
+                        // 取消弹窗  ---没有成功？？？？ 单次可以，可能是 fade类名的原因
+                    //  弹窗没了，背景没关 -取消也是————没成功 question
+                    modalInstance.hide()
+                }
+            })  
+
+        }
+
+        const clearFormData=()=>{
+            // 取消弹窗的时候移除表单上存储的数据 
+            modalInstance.dispose()
+        }
+
+       
+
+        if(addOrUpdateModal){
+
+            
+            // 保证监听器只能挂载一次————放在useEffect中
+            addOrUpdateModal.addEventListener('show.bs.modal',handleModalClickEvent);
+            addOrUpdateModal.querySelector("#confirm").addEventListener('click',submitFormMsg)
+            
+            // 移除表单上的数据————未验证
+            addOrUpdateModal.addEventListener('hidde.bs.modal', clearFormData)
+        }
+        return ()=>{
+            // 一定要取消监听，否则会重复执行一次
+            if(addOrUpdateModal){
+                addOrUpdateModal.removeEventListener('show.bs.modal', handleModalClickEvent)
+                addOrUpdateModal.querySelector("#confirm").removeEventListener('click',submitFormMsg)
+                addOrUpdateModal.removeEventListener('hidde.bs.modal', clearFormData)
+            }
+        }
+    },[selectNavItemMsg])
 
     const useNavHandleClick=(event)=>{
         // 自定义hook必须在hook里边用??
         useSubNavShowOrHide(event)
         //返回导航对应的内容
         if(/nav-link/.test(event.target.className)){
-
-            console.log('调用了')
             let [levelFlag,parentId] = event.target.getAttribute('data-nav-index').split('-')
-            setGlobalLevelFlag(levelFlag)
-            setGlobalParentId(parentId)
+            setSelectNavItemMsg({...selectNavItemMsg,levelFlag,parentId})
 
-            //这里边的参数不能使用useState中的值————第一次出不来
+            //这里边的参数不能使用useState中的值————第一次出不来 ？？
             getNavItemList(levelFlag,parentId).then((res)=>{
+                console.log('调用了111')
                 setNavItemList(res)
             })
         }
     }
-
-
-    // window.onload = function(){  //不能加这个，表单数据出不来？？？
-        // ------------弹窗监听事件————只能这样写
-        const addOrUpdateModal = document.getElementById('addOrUpdateModal')
-        // const addOrUpdateModal = $('#addOrUpdateModal')
-        addOrUpdateModal && addOrUpdateModal.addEventListener('show.bs.modal',  (event) => {
-            
-            console.log('event---------弹窗',event)
-            // addOrUpdateModal.dispose()
-
-            let id=''
-            let levelFlag = globalLevelFlag
-            let parentId  = globalParentId
-
-
-            // 触发弹窗的按钮
-            const button = event.relatedTarget
-            const modalTitle = addOrUpdateModal.querySelector('.modal-title')
-            if(button.innerText === '新增'){
-                modalTitle.textContent = '新增'
-                id=''
-                setGlobalItemId(id)
-            }else if(button.innerText === '修改'){
-                modalTitle.textContent = '修改'
-                id = button.getAttribute('data-item-id')
-                setGlobalItemId(id)
-            }
-
-            // modalTitle.textContent = `New message to ${recipient}`
-            
-
-
-            // 为什么会触发8次 甚至16次  ：4次失败，4次成功  ？？question！！！！
-            // 选择的导航元素 子层级越高，调用次数越多
-            // 而且state中的状态会回滚一下 ？？？？？？？？？？？ //-_-\\
-            console.log('leve---id',levelFlag,parentId)
-            // 接口调用里边也不能直接使用useState的内容
-            baseService.post("/management/getManagementContent?level="+levelFlag+'&id='+id+'&parentId='+parentId).then((res)=>{
-                console.log('调用接口回显的数据',res.data)
-                let data = res.data
-                
-
-                addOrUpdateModal.querySelector('#parentName').value = data.parentName
-                addOrUpdateModal.querySelector('#itemTitle').value = data.name
-                addOrUpdateModal.querySelector('#itemUrl').value = data.url
-            }).catch(err=>{
-                console.log('err--------',err)
-            })
-
-        })
-
-        // 提交事件
-        if(addOrUpdateModal){  //这个条件必须加 否则报错
-            const modalInstance = new Modal(addOrUpdateModal);
-
-            addOrUpdateModal.addEventListener('hidde.bs.modal',  (event) => {
-                // 取消弹窗的时候移除表单上存储的数据
-                modalInstance.dispose()
-            })
-
-            // 监听表单提交事件 新增/修改 ————修改新增的时候一次性添加了好多数据————question__相当于重复执行了好多次
-            // 因该是setState()重新更新dom的原因 ？？？？？
-            addOrUpdateModal.querySelector("#confirm").addEventListener('click',()=>{
-                console.log('提交事件-------')
-
-                let inputName = addOrUpdateModal.querySelector('#itemTitle').value
-                let inputUrl = addOrUpdateModal.querySelector('#itemUrl').value
-
-                // 提交数据
-                let params = {}
-                // treeSelect  ID  LEVEL 根据这两个确认调用哪个接口
-                params = {
-                    level:globalLevelFlag,
-                    id:globalItemId,
-                    name:inputName,
-                    url:inputUrl,
-                    parentId:globalParentId
-                }
-            
-                baseService.post("/management/addOrUpdate",params).then((res)=>{
-                    if(res.data == 'success'){
-                        // // 更新已选择的数据列表修改内容
-                        // initSelectList();
-                        // // 重新刷新Tree页面
-                        // initTreeList();
-        
-                        // ElMessage({
-                        //     type:'success',
-                        //     message:'成功'
-                        // })
-
-                         // 取消弹窗  ---没有成功？？？？ 单次可以，可能是 fade类名的原因
-                        //  弹窗没了，背景没关 -取消也是
-                        modalInstance.hide()
-                    }
-                })               
-            })
-        }
-    // }
-
 
     return (
         <div> 
@@ -240,9 +231,7 @@ export default function ContentMangement(){
                                 )
                             }
                             else{
-                                return (
-                                    subNavDomLoop(item)
-                                )
+                                return ( subNavDomLoop(item) )
                             }
                         })}
                     </ul>
@@ -274,8 +263,7 @@ export default function ContentMangement(){
                                         {/* ??????? */}
                                         {/* onClick={contentManagement(item.id)} */}
 
-
-                                        {globalLevelFlag ==3 && (<a style={{color: 'green'}}>详情</a>)}
+                                        {selectNavItemMsg.levelFlag ==3 && (<a style={{color: 'green'}}>详情</a>)}
                                     </span>
                                 </li>
                             )
@@ -306,7 +294,8 @@ export default function ContentMangement(){
 
             {/* data-bs-keyboard="false"  是否快捷键退出 */}
             {/* 新增/修改弹窗 */}
-            <div  className="modal fade" id="addOrUpdateModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            {/* fade */}
+            <div  className="modal " id="addOrUpdateModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div className="modal-dialog">
                     <div className="modal-content">
                         <div className="modal-header">

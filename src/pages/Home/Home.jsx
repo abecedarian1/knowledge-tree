@@ -2,7 +2,7 @@ import home from './Home.module.scss'
 import baseService from '../../axios/baseService'
 import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
-
+import bannerImg from '../../imgs/banner.jpg'
 const getHomeList = async () => {
     let list = []
     let res = await baseService.get('/getKnowledgeCategory')
@@ -24,10 +24,10 @@ export default function Home() {
     return (
         <div>
             <div className={home.banner}>
+                <img className={home.banner_pic} src={bannerImg} alt="图片加载失败" />
                 <div className={home.tittle_bg}>
                     <div className={home.tittle}><h1>线上个人笔记</h1></div>
                 </div>
-
                 <div className={home.search}>
                     <div style={{ width: '85%', position: 'relative' }}>
                         <span><input type="text" className={home.search_content} placeholder="请输入你想查找的内容" /></span>

@@ -101,12 +101,8 @@ export default function ContentMangement(){
         console.log('selectNavItemMsg',selectNavItemMsg)
         // 放在useEffect（组件挂载）中可以保证在DOM加载完成后获取到元素内容
         const addOrUpdateModal = document.getElementById('addOrUpdateModal')
-
+        const modalInstance = new Modal(addOrUpdateModal);
         
-        const modalInstance = addOrUpdateModal && new Modal(addOrUpdateModal);
-        
-
-
         //弹窗点击显示事件
         const handleModalClickEvent= async (event)=>{
             let id=''
@@ -115,13 +111,14 @@ export default function ContentMangement(){
             // 触发弹窗的按钮
             const button = event.relatedTarget
             const modalTitle = addOrUpdateModal.querySelector('.modal-title')
+            //setSelectNavItemMsg 事件导致弹窗关闭不了 ???   question
             if(button.innerText === '新增'){
                 modalTitle.textContent = '新增'
-                setSelectNavItemMsg({...selectNavItemMsg,itemId:''})
+                // setSelectNavItemMsg({...selectNavItemMsg,itemId:''})
             }else if(button.innerText === '修改'){
                 modalTitle.textContent = '修改'
                 id = button.getAttribute('data-item-id')
-                setSelectNavItemMsg({...selectNavItemMsg,itemId:id})
+                // setSelectNavItemMsg({...selectNavItemMsg,itemId:id})
             }
             await baseService.post("/management/getManagementContent?level="+levelFlag+'&id='+id+'&parentId='+parentId).then((res)=>{
                 let data = res.data
@@ -132,9 +129,7 @@ export default function ContentMangement(){
         }
  
         // 表单提交
-        const submitFormMsg =()=>{
-            console.log('提交事件-------')
-
+        const submitFormMsg =(event)=>{
             let inputName = addOrUpdateModal.querySelector('#itemTitle').value
             let inputUrl = addOrUpdateModal.querySelector('#itemUrl').value
             let params = {}
@@ -145,54 +140,42 @@ export default function ContentMangement(){
                 url:inputUrl,
                 parentId:selectNavItemMsg.parentId
             }
-        
             // 提交数据
             baseService.post("/management/addOrUpdate",params).then((res)=>{
                 if(res.data == 'success'){
+                    // 刷新导航
+                    getCurrentMessage().then((res)=>{
+                        setNavTree(res)
+                    })
+                    // 刷新列表
+                    getNavItemList(selectNavItemMsg.levelFlag,selectNavItemMsg.parentId).then((res)=>{
+                        setNavItemList(res)
+                    })
+                    document.getElementById('msgTip').style.display = 'block'
+                    setTimeout(()=>{
+                        document.getElementById('msgTip').style.display = 'none'
+                    },1500)
 
-
-                    // ？？？？？？？？？？？？？/
-                    // // 更新已选择的数据列表修改内容
-                    // initSelectList();
-                    // // 重新刷新Tree页面
-                    // initTreeList();
-    
-                    // ElMessage({
-                    //     type:'success',
-                    //     message:'成功'
-                    // })
-
-                        // 取消弹窗  ---没有成功？？？？ 单次可以，可能是 fade类名的原因
-                    //  弹窗没了，背景没关 -取消也是————没成功 question
-                    modalInstance.hide()
+                    modalInstance.hide();     // 关闭弹窗
+                    // 暴力关闭背景遮罩 -_-  hide()只局部生效
+                     // body的残留样式没有改————目前没有发现影响
+                    let backdrop = document.querySelector('.modal-backdrop.show')
+                    backdrop.parentNode.removeChild(backdrop)
                 }
             })  
-
         }
 
-        const clearFormData=()=>{
-            // 取消弹窗的时候移除表单上存储的数据 
-            modalInstance.dispose()
-        }
-
-       
-
+      
         if(addOrUpdateModal){
-
-            
             // 保证监听器只能挂载一次————放在useEffect中
             addOrUpdateModal.addEventListener('show.bs.modal',handleModalClickEvent);
             addOrUpdateModal.querySelector("#confirm").addEventListener('click',submitFormMsg)
-            
-            // 移除表单上的数据————未验证
-            addOrUpdateModal.addEventListener('hidde.bs.modal', clearFormData)
         }
         return ()=>{
             // 一定要取消监听，否则会重复执行一次
             if(addOrUpdateModal){
                 addOrUpdateModal.removeEventListener('show.bs.modal', handleModalClickEvent)
                 addOrUpdateModal.querySelector("#confirm").removeEventListener('click',submitFormMsg)
-                addOrUpdateModal.removeEventListener('hidde.bs.modal', clearFormData)
             }
         }
     },[selectNavItemMsg])
@@ -205,7 +188,7 @@ export default function ContentMangement(){
             let [levelFlag,parentId] = event.target.getAttribute('data-nav-index').split('-')
             setSelectNavItemMsg({...selectNavItemMsg,levelFlag,parentId})
 
-            //这里边的参数不能使用useState中的值————第一次出不来 ？？
+            //这里边的参数不能使用useState中的值————第一次出不来 ？？ question --还没验证
             getNavItemList(levelFlag,parentId).then((res)=>{
                 console.log('调用了111')
                 setNavItemList(res)
@@ -214,6 +197,12 @@ export default function ContentMangement(){
     }
 
     return (
+        <>
+         {/* 动态提示消息 */}
+         <div style={{display:'none'}} id='msgTip' className={"alert alert-warning alert-dismissible fade show " + ' ' +contentManagement.warrning} role="alert">
+            <strong>success!</strong> 
+            <button id='msgTipBtn' type="button" className="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
         <div> 
             <div className={contentManagement.user_bar}>
                 <a style={{textDecoration: 'none',color:'#335f5b',marginLeft: '20px',float: 'left'}} href="/">返回</a>
@@ -236,7 +225,6 @@ export default function ContentMangement(){
                         })}
                     </ul>
                 </nav>
-
 
                 {/* <!-- 列表增删改 --> */}
 
@@ -290,45 +278,50 @@ export default function ContentMangement(){
             </div>
 
 
-            {/* ---------------------------------------------------------------- */}
+            
+        </div>
 
-            {/* data-bs-keyboard="false"  是否快捷键退出 */}
-            {/* 新增/修改弹窗 */}
-            {/* fade */}
-            <div  className="modal " id="addOrUpdateModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div className="modal-dialog">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h1 className="modal-title fs-5" id="exampleModalLabel">新增</h1>
-                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div className="modal-body">
-                            <form>
-                                <div className="mb-3">
-                                    <label for="parentName" className="col-form-label">上级标题</label>
-                                    <input type="text"  className="form-control" id="parentName"/>
-                                </div>
 
-                                <div className="mb-3">
-                                    <label for="itemTitle" className="col-form-label">标题</label>
-                                    <input type="text" className="form-control" id="itemTitle"/>
-                                </div>
-                                <div className="mb-3">
-                                    <label for="itemUrl" className="col-form-label">路由</label>
-                                    <input type="text" className="form-control" id="itemUrl"/>
-                                </div>
-                                
-                            </form>
-                        </div>
-                        <div className="modal-footer">
-                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                            {/* 在这里添加事件 */}
-                            {/* data-bs-target="#exampleModalToggle2" 另一个modal上的id */}
-                            <button id="confirm" type="button" className="btn btn-primary">确定</button>
-                        </div>
+         {/* ---------------------------------------------------------------- */}
+
+         {/* data-bs-keyboard="false"  是否快捷键退出 */}
+         {/* 新增/修改弹窗 */}
+         {/* fade */}
+        <div  className="modal " id="addOrUpdateModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div className="modal-dialog">
+                <div className="modal-content">
+                    <div className="modal-header">
+                        <h1 className="modal-title fs-5" id="exampleModalLabel">新增</h1>
+                        <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div className="modal-body">
+                        <form>
+                            <div className="mb-3">
+                                <label for="parentName" className="col-form-label">上级标题</label>
+                                <input type="text"  className="form-control" id="parentName"/>
+                            </div>
+
+                            <div className="mb-3">
+                                <label for="itemTitle" className="col-form-label">标题</label>
+                                <input type="text" className="form-control" id="itemTitle"/>
+                            </div>
+                            <div className="mb-3">
+                                <label for="itemUrl" className="col-form-label">路由</label>
+                                <input type="text" className="form-control" id="itemUrl"/>
+                            </div>
+                            
+                        </form>
+                    </div>
+                    <div className="modal-footer">
+                        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        {/* 在这里添加事件 */}
+                        {/* data-bs-target="#exampleModalToggle2" 另一个modal上的id */}
+                        <button id="confirm" type="button" className="btn btn-primary">确定</button>
                     </div>
                 </div>
             </div>
-    </div>
+        </div>
+
+        </>
     )
 }

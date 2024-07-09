@@ -2,6 +2,12 @@
 
 $content-height:calc(100vh - $topBarHeight - $userBarHeight - $footerHeight);
 
+
+.warrning{
+    position:absolute;
+    text-align: center;
+    margin:  0 50%;
+}
 .user_bar{
     width:100%;
     height:$userBarHeight;

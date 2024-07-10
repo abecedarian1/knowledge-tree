@@ -19,4 +19,4 @@
 >
 > npm install @popperjs/core              # bootstrap5 的依赖项
 >
->  
+>  npm install --save @tinymce/tinymce-react  #  参考官网 https://www.tiny.cloud/docs/tinymce/latest/react-cloud/

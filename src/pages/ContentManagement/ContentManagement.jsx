@@ -4,7 +4,10 @@ import { Modal } from 'bootstrap';
 import contentManagement from "./ContentManagement.module.scss"
 import baseService from "../../axios/baseService"
 import { useEffect } from "react"
-import { useState } from "react"
+import { useState ,useRef } from "react"
+import { Editor } from '@tinymce/tinymce-react';
+
+
 // import $ from 'jquery'
 
 // 自定义 标签空前缀 类样式
@@ -59,6 +62,8 @@ function useSubNavShowOrHide(event){
         //设置相反值
         event.target.setAttribute("aria-pressed",!pressed)
         // 当折叠回来后，还要控制子元素中的下拉项全部折叠---question
+        // nav的样式需要改 ----
+        // useRef需要理解 -----
     }
 }
 
@@ -95,9 +100,28 @@ export default function ContentMangement(){
     const [selectNavItemMsg,setSelectNavItemMsg] = useState({levelFlag:'',parentId:''})
     const [showContent,setShowContent] = useState(false)
     const [detailContent,setDetailContent] = useState({id:'',content:'',title:''})
-
     //与页面渲染无关的尽量不要用useState() 
     let itemId = ''    //新增/修改元素的id
+    const editorRef = useRef(null);
+
+    const saveContent = () => {
+        if (editorRef.current) {
+            let param = {
+                content:editorRef.current.getContent(),
+                parentId:detailContent.id
+            }
+            //修改
+            baseService.put("/content",param).then((res)=>{
+                if(res.data == 'success'){
+                    //提示
+                    document.getElementById('msgTip').style.display = 'block'
+                    setTimeout(()=>{
+                        document.getElementById('msgTip').style.display = 'none'
+                    },1500)
+                }
+            })   
+        }
+    };
     
    
     useEffect(()=>{
@@ -156,7 +180,6 @@ export default function ContentMangement(){
                     setTimeout(()=>{
                         document.getElementById('msgTip').style.display = 'none'
                     },1500)
-
                     modalInstance.hide();     // 关闭弹窗
                     //关闭背景遮罩 和body残留样式 -_-  hide()只局部生效
                     let backdrop = document.querySelector('.modal-backdrop.show')
@@ -214,28 +237,14 @@ export default function ContentMangement(){
 
     const deleteItem=(event)=>{
         let id = event.target.parentNode.getAttribute('data-item-id')
-
-
-        // ElMessageBox.confirm('确定要进行删除吗', '提示', 
-        // {
-        //     confirmButtonText: '确定',
-        //     cancelButtonText:'取消',
-        //     type:'warning'
-        // }
-        // ).then(()=>{
-
+        let confirm = window.confirm('确定要进行删除吗？')
+        if(confirm){
             baseService.delete("/management/managementDelete?id="+id+"&level="+selectNavItemMsg.levelFlag).then((res)=>{
                 if(res.data == "cascading"){
                     alert('还有子项未删除，请先删除子项')
                 }else if(res.data == "error"){
-
                     alert('error')
-                    // ElMessage({
-                    //     type:'error',
-                    //     message:'error'
-                    // })
                 }else{
-            
                     // 刷新导航 和列表
                     getCurrentMessage().then((res)=>{
                         setNavTree(res)
@@ -243,135 +252,137 @@ export default function ContentMangement(){
                     getNavItemList(selectNavItemMsg.levelFlag,selectNavItemMsg.parentId).then((res)=>{
                         setNavItemList(res)
                     })
-
                      //提示 删除成功
                      document.getElementById('msgTip').style.display = 'block'
                      setTimeout(()=>{
                          document.getElementById('msgTip').style.display = 'none'
                      },1500)
-                  
                 }
             })
-
-
-        // })
-
+        }   
     }
+
 
     return (
         <>
-         {/* 动态提示消息 */}
-         <div style={{display:'none'}} id='msgTip' className={"alert alert-warning alert-dismissible fade show " + ' ' +contentManagement.alert_msg} role="alert">
-            <strong>success!</strong> 
-        </div>
-        <div> 
-            <div className={contentManagement.user_bar}>
-                <a style={{textDecoration: 'none',color:'#335f5b',marginLeft: '20px',float: 'left'}} href="/">返回</a>
-                <div style={{textAlign:'center'}}><a style={{fontSize:'30px',fontWeight: 'bolder'}}>内容管理</a></div>
+            {/* 动态提示消息 */}
+            <div style={{display:'none'}} id='msgTip' className={"alert alert-warning alert-dismissible fade show " + ' ' +contentManagement.alert_msg} role="alert">
+                <strong>success!</strong> 
             </div>
-            <div className={contentManagement.content}>
-                <nav id="nav" className={"navbar ps-2" + " " + contentManagement.navbar } onClick={useNavHandleClick} >
-                    <ul className="navbar-nav">
-                        {navTree.map((item)=>{
-                            if(item.children.length == 0){
-                                return (
-                                    <li key={item.level+'-'+item.id} className="nav-item">
-                                        <a data-nav-index={item.level+'-'+item.id} className={"nav-link" + customPreNull} aria-current="page" href="#">{item.label}</a>
-                                    </li>
-                                )
-                            }
-                            else{
-                                return ( subNavDomLoop(item) )
-                            }
-                        })}
-                    </ul>
-                </nav>
-
-                {!showContent && (
-                    <div id="box_1" className={contentManagement.box_1}>
-                        <div>
-                            <button  
-                                type="button" 
-                                className="btn btn-primary" 
-                                data-bs-toggle="modal" 
-                                data-bs-target="#addOrUpdateModal">新增</button>
-                        </div>
-                        <ul>
-                            {navItemList.map((item,index)=>{
-                                return (
-                                    <li key={item.id}> 
-                                        <span style={{float: 'left'}}>{index+1}. {item.name}</span>
-                                        <span style={{float: 'right'}} data-item-id={item.id}>
-                                            <a type="button" data-bs-toggle="modal"  data-bs-target="#addOrUpdateModal" style={{color: 'yellowgreen',marginRight: '5px'}}>修改</a>
-
-                                            {/* onClick={deleteItem(item.id)} */}
-                                            <a type="button" onClick={deleteItem} style={{color: 'red',marginRight: '5px'}}>删除</a>
-                                            {selectNavItemMsg.levelFlag ==3 && (<a onClick={goDetail} type="button" style={{color: 'green'}}>详情</a>)}
-                                        </span>
-                                    </li>
-                                )
+            <div> 
+                <div className={contentManagement.user_bar}>
+                    <a style={{textDecoration: 'none',color:'#335f5b',marginLeft: '20px',float: 'left'}} href="/">返回</a>
+                    <div style={{textAlign:'center'}}><a style={{fontSize:'30px',fontWeight: 'bolder'}}>内容管理</a></div>
+                </div>
+                <div className={contentManagement.content}>
+                    <nav id="nav" className={"navbar ps-2" + " " + contentManagement.navbar } onClick={useNavHandleClick} >
+                        <ul className="navbar-nav">
+                            {navTree.map((item)=>{
+                                if(item.children.length == 0){
+                                    return (
+                                        <li key={item.level+'-'+item.id} className="nav-item">
+                                            <a data-nav-index={item.level+'-'+item.id} className={"nav-link" + customPreNull} aria-current="page" href="#">{item.label}</a>
+                                        </li>
+                                    )
+                                }
+                                else{
+                                    return ( subNavDomLoop(item) )
+                                }
                             })}
                         </ul>
-                    </div>  
-                )}
-                
-                {showContent && (
-                    // <!-- 富文本编辑器 --> */}
-                    <div className={contentManagement.box_1}> 
-                        <div>
-                            {/* <el-button onClick={saveContent} type="primary" style={{float: 'right'}}>保存</el-button> */}
+                    </nav>
+
+                    {!showContent && (
+                        <div id="box_1" className={contentManagement.box_1}>
+                            <div>
+                                <button  
+                                    type="button" 
+                                    className="btn btn-primary" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#addOrUpdateModal">新增</button>
+                            </div>
+                            <ul>
+                                {navItemList.map((item,index)=>{
+                                    return (
+                                        <li key={item.id}> 
+                                            <span style={{float: 'left'}}>{index+1}. {item.name}</span>
+                                            <span style={{float: 'right'}} data-item-id={item.id}>
+                                                <a type="button" data-bs-toggle="modal"  data-bs-target="#addOrUpdateModal" style={{color: 'yellowgreen',marginRight: '5px'}}>修改</a>
+                                                <a type="button" onClick={deleteItem} style={{color: 'red',marginRight: '5px'}}>删除</a>
+                                                {selectNavItemMsg.levelFlag ==3 && (<a onClick={goDetail} type="button" style={{color: 'green'}}>详情</a>)}
+                                            </span>
+                                        </li>
+                                    )
+                                })}
+                            </ul>
+                        </div>  
+                    )}
+                    
+                    {showContent && (
+                        // <!-- 富文本编辑器 --> */}
+                        <div className={contentManagement.box_1}> 
+                            <div>
+                                <button onClick={saveContent}  className="btn btn-primary" type="button" style={{float: 'right'}}>保存</button>
+                            </div>
+                            <h3 style={{textAlign: 'center',width: '100%'}}>{detailContent.title}</h3>
+                            <div className={contentManagement.app_container} style={{width: '100%',height: '100%'}}>
+                                <Editor
+                                    apiKey='5b0qvmq9eiiqghh4bfmq810o5v7abhrwz9poujyyqk1bflh8'
+                                    onInit={(_evt, editor) => editorRef.current = editor}
+                                    initialValue={detailContent.content}
+                                    init={{
+                                    height: 500,
+                                    menubar: false,
+                                    plugins: [
+                                        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                                        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                                        'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
+                                    ],
+                                    toolbar: 'undo redo | blocks | ' +
+                                        'bold italic forecolor | alignleft aligncenter ' +
+                                        'alignright alignjustify | bullist numlist outdent indent | ' +
+                                        'removeformat | help',
+                                    content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+                                    }}
+                                />
+                            </div>
+                        </div> 
+                    )}
+                </div>            
+            </div>
+
+            {/* ---------------------------------------------------------------- */}
+            {/* 新增/修改弹窗 */}
+            <div  className="modal " id="addOrUpdateModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h1 className="modal-title fs-5" id="exampleModalLabel">新增</h1>
+                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        {/* <!-- 标题 --> */}
-                        {/*  */}
-                        <h3 style={{textAlign: 'center',width: '100%'}}>{detailContent.title}</h3>
-                        <div className={contentManagement.app_container} style={{width: '100%',height: '100%'}}>
-                            {/* <editor  id="tinymce" v-model="detailContent.content" :init="init" > 111 </editor> */}
+                        <div className="modal-body">
+                            <form>
+                                <div className="mb-3">
+                                    <label for="parentName" className="col-form-label">上级标题</label>
+                                    <input type="text"  className="form-control" id="parentName"/>
+                                </div>
+                                <div className="mb-3">
+                                    <label for="itemTitle" className="col-form-label">标题</label>
+                                    <input type="text" className="form-control" id="itemTitle"/>
+                                </div>
+                                <div className="mb-3">
+                                    <label for="itemUrl" className="col-form-label">路由</label>
+                                    <input type="text" className="form-control" id="itemUrl"/>
+                                </div>
+                            </form>
                         </div>
-                    </div> 
-
-                )}
-
-            </div>            
-        </div>
-
-
-         {/* ---------------------------------------------------------------- */}
-         {/* 新增/修改弹窗 */}
-        <div  className="modal " id="addOrUpdateModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div className="modal-dialog">
-                <div className="modal-content">
-                    <div className="modal-header">
-                        <h1 className="modal-title fs-5" id="exampleModalLabel">新增</h1>
-                        <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div className="modal-body">
-                        <form>
-                            <div className="mb-3">
-                                <label for="parentName" className="col-form-label">上级标题</label>
-                                <input type="text"  className="form-control" id="parentName"/>
-                            </div>
-
-                            <div className="mb-3">
-                                <label for="itemTitle" className="col-form-label">标题</label>
-                                <input type="text" className="form-control" id="itemTitle"/>
-                            </div>
-                            <div className="mb-3">
-                                <label for="itemUrl" className="col-form-label">路由</label>
-                                <input type="text" className="form-control" id="itemUrl"/>
-                            </div>
-                            
-                        </form>
-                    </div>
-                    <div className="modal-footer">
-                        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                        {/* 在这里添加事件 */}
-                        {/* data-bs-target="#exampleModalToggle2" 另一个modal上的id */}
-                        <button id="confirm" type="button" className="btn btn-primary">确定</button>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                            <button id="confirm" type="button" className="btn btn-primary">确定</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
         </>
     )
 }

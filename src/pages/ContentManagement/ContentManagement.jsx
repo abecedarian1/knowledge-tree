@@ -92,35 +92,37 @@ function subNavDomLoop(item){
 export default function ContentMangement(){
     const [navTree,setNavTree] = useState([])
     const [navItemList,setNavItemList] = useState([])
-    const [selectNavItemMsg,setSelectNavItemMsg] = useState({levelFlag:'',parentId:'',itemId:''})
+    const [selectNavItemMsg,setSelectNavItemMsg] = useState({levelFlag:'',parentId:''})
+    const [showContent,setShowContent] = useState(false)
+    const [detailContent,setDetailContent] = useState({id:'',content:'',title:''})
 
+    //与页面渲染无关的尽量不要用useState() 
+    let itemId = ''    //新增/修改元素的id
+    
+   
     useEffect(()=>{
         getCurrentMessage().then((res)=>{
             setNavTree(res)
         })
-        console.log('selectNavItemMsg',selectNavItemMsg)
         // 放在useEffect（组件挂载）中可以保证在DOM加载完成后获取到元素内容
         const addOrUpdateModal = document.getElementById('addOrUpdateModal')
         const modalInstance = new Modal(addOrUpdateModal);
         
         //弹窗点击显示事件
         const handleModalClickEvent= async (event)=>{
-            let id=''
             let levelFlag = selectNavItemMsg.levelFlag
             let parentId  = selectNavItemMsg.parentId
             // 触发弹窗的按钮
             const button = event.relatedTarget
             const modalTitle = addOrUpdateModal.querySelector('.modal-title')
-            //setSelectNavItemMsg 事件导致弹窗关闭不了 ???   question
             if(button.innerText === '新增'){
                 modalTitle.textContent = '新增'
-                // setSelectNavItemMsg({...selectNavItemMsg,itemId:''})
+                itemId = ''
             }else if(button.innerText === '修改'){
                 modalTitle.textContent = '修改'
-                id = button.getAttribute('data-item-id')
-                // setSelectNavItemMsg({...selectNavItemMsg,itemId:id})
+                itemId = button.parentNode.getAttribute('data-item-id')
             }
-            await baseService.post("/management/getManagementContent?level="+levelFlag+'&id='+id+'&parentId='+parentId).then((res)=>{
+            await baseService.post("/management/getManagementContent?level="+levelFlag+'&id='+itemId+'&parentId='+parentId).then((res)=>{
                 let data = res.data
                 addOrUpdateModal.querySelector('#parentName').value = data.parentName
                 addOrUpdateModal.querySelector('#itemTitle').value = data.name
@@ -129,38 +131,37 @@ export default function ContentMangement(){
         }
  
         // 表单提交
-        const submitFormMsg =(event)=>{
+        const submitFormMsg =()=>{
             let inputName = addOrUpdateModal.querySelector('#itemTitle').value
             let inputUrl = addOrUpdateModal.querySelector('#itemUrl').value
             let params = {}
             params = {
                 level:selectNavItemMsg.levelFlag,
-                id:selectNavItemMsg.itemId,
+                id:itemId,
                 name:inputName,
                 url:inputUrl,
                 parentId:selectNavItemMsg.parentId
             }
-            // 提交数据
             baseService.post("/management/addOrUpdate",params).then((res)=>{
                 if(res.data == 'success'){
-                    // 刷新导航
+                    // 刷新导航 和列表
                     getCurrentMessage().then((res)=>{
                         setNavTree(res)
                     })
-                    // 刷新列表
                     getNavItemList(selectNavItemMsg.levelFlag,selectNavItemMsg.parentId).then((res)=>{
                         setNavItemList(res)
                     })
+                    //提示
                     document.getElementById('msgTip').style.display = 'block'
                     setTimeout(()=>{
                         document.getElementById('msgTip').style.display = 'none'
                     },1500)
 
                     modalInstance.hide();     // 关闭弹窗
-                    // 暴力关闭背景遮罩 -_-  hide()只局部生效
-                     // body的残留样式没有改————目前没有发现影响
+                    //关闭背景遮罩 和body残留样式 -_-  hide()只局部生效
                     let backdrop = document.querySelector('.modal-backdrop.show')
-                    backdrop.parentNode.removeChild(backdrop)
+                    backdrop && backdrop.parentNode.removeChild(backdrop)
+                    document.body.removeAttribute('style')
                 }
             })  
         }
@@ -181,27 +182,87 @@ export default function ContentMangement(){
     },[selectNavItemMsg])
 
     const useNavHandleClick=(event)=>{
+        setShowContent(false)
         // 自定义hook必须在hook里边用??
         useSubNavShowOrHide(event)
         //返回导航对应的内容
         if(/nav-link/.test(event.target.className)){
             let [levelFlag,parentId] = event.target.getAttribute('data-nav-index').split('-')
-            setSelectNavItemMsg({...selectNavItemMsg,levelFlag,parentId})
-
-            //这里边的参数不能使用useState中的值————第一次出不来 ？？ question --还没验证
+            setSelectNavItemMsg({levelFlag,parentId})
             getNavItemList(levelFlag,parentId).then((res)=>{
-                console.log('调用了111')
                 setNavItemList(res)
             })
         }
     }
 
+    const goDetail= async (event)=>{
+        let id = event.target.parentNode.getAttribute('data-item-id')
+        let content = ''
+        let title = ''
+        if(selectNavItemMsg.levelFlag == 3){
+            setShowContent(true)
+            Promise.all([
+                baseService.get("/content?id="+id),
+                baseService.get("/contentList?id="+id)
+            ]).then((res)=>{
+                content = res[0].data.content
+                title = res[1].data[0].name
+                setDetailContent({id,content,title})
+            }).catch(err=>{console.log(err)})
+        }
+    }
+
+    const deleteItem=(event)=>{
+        let id = event.target.parentNode.getAttribute('data-item-id')
+
+
+        // ElMessageBox.confirm('确定要进行删除吗', '提示', 
+        // {
+        //     confirmButtonText: '确定',
+        //     cancelButtonText:'取消',
+        //     type:'warning'
+        // }
+        // ).then(()=>{
+
+            baseService.delete("/management/managementDelete?id="+id+"&level="+selectNavItemMsg.levelFlag).then((res)=>{
+                if(res.data == "cascading"){
+                    alert('还有子项未删除，请先删除子项')
+                }else if(res.data == "error"){
+
+                    alert('error')
+                    // ElMessage({
+                    //     type:'error',
+                    //     message:'error'
+                    // })
+                }else{
+            
+                    // 刷新导航 和列表
+                    getCurrentMessage().then((res)=>{
+                        setNavTree(res)
+                    })
+                    getNavItemList(selectNavItemMsg.levelFlag,selectNavItemMsg.parentId).then((res)=>{
+                        setNavItemList(res)
+                    })
+
+                     //提示 删除成功
+                     document.getElementById('msgTip').style.display = 'block'
+                     setTimeout(()=>{
+                         document.getElementById('msgTip').style.display = 'none'
+                     },1500)
+                  
+                }
+            })
+
+
+        // })
+
+    }
+
     return (
         <>
          {/* 动态提示消息 */}
-         <div style={{display:'none'}} id='msgTip' className={"alert alert-warning alert-dismissible fade show " + ' ' +contentManagement.warrning} role="alert">
+         <div style={{display:'none'}} id='msgTip' className={"alert alert-warning alert-dismissible fade show " + ' ' +contentManagement.alert_msg} role="alert">
             <strong>success!</strong> 
-            <button id='msgTipBtn' type="button" className="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
         <div> 
             <div className={contentManagement.user_bar}>
@@ -226,67 +287,56 @@ export default function ContentMangement(){
                     </ul>
                 </nav>
 
-                {/* <!-- 列表增删改 --> */}
+                {!showContent && (
+                    <div id="box_1" className={contentManagement.box_1}>
+                        <div>
+                            <button  
+                                type="button" 
+                                className="btn btn-primary" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#addOrUpdateModal">新增</button>
+                        </div>
+                        <ul>
+                            {navItemList.map((item,index)=>{
+                                return (
+                                    <li key={item.id}> 
+                                        <span style={{float: 'left'}}>{index+1}. {item.name}</span>
+                                        <span style={{float: 'right'}} data-item-id={item.id}>
+                                            <a type="button" data-bs-toggle="modal"  data-bs-target="#addOrUpdateModal" style={{color: 'yellowgreen',marginRight: '5px'}}>修改</a>
 
-                {/* v-if="!showContent"  */}
-                <div id="box_1" className={contentManagement.box_1}>
-                    <div>
-                        <button  
-                            type="button" 
-                            className="btn btn-primary" 
-                            data-bs-toggle="modal" 
-                            data-bs-target="#addOrUpdateModal">新增</button>
-                    </div>
+                                            {/* onClick={deleteItem(item.id)} */}
+                                            <a type="button" onClick={deleteItem} style={{color: 'red',marginRight: '5px'}}>删除</a>
+                                            {selectNavItemMsg.levelFlag ==3 && (<a onClick={goDetail} type="button" style={{color: 'green'}}>详情</a>)}
+                                        </span>
+                                    </li>
+                                )
+                            })}
+                        </ul>
+                    </div>  
+                )}
+                
+                {showContent && (
+                    // <!-- 富文本编辑器 --> */}
+                    <div className={contentManagement.box_1}> 
+                        <div>
+                            {/* <el-button onClick={saveContent} type="primary" style={{float: 'right'}}>保存</el-button> */}
+                        </div>
+                        {/* <!-- 标题 --> */}
+                        {/*  */}
+                        <h3 style={{textAlign: 'center',width: '100%'}}>{detailContent.title}</h3>
+                        <div className={contentManagement.app_container} style={{width: '100%',height: '100%'}}>
+                            {/* <editor  id="tinymce" v-model="detailContent.content" :init="init" > 111 </editor> */}
+                        </div>
+                    </div> 
 
-                    <ul>
-                        {navItemList.map((item,index)=>{
-                            return (
-                                <li key={item.id}> 
-                                    <span style={{float: 'left'}}>{index+1}. {item.name}</span>
-                                    <span style={{float: 'right'}}>
-                                        <a type="button" data-item-id={item.id} data-bs-toggle="modal"  data-bs-target="#addOrUpdateModal" style={{color: 'yellowgreen',marginRight: '5px'}}>修改</a>
+                )}
 
-                                        {/* onClick={deleteItem(item.id)} */}
-                                        <a  style={{color: 'red',marginRight: '5px'}}>删除</a>
-                                        {/* ??????? */}
-                                        {/* onClick={contentManagement(item.id)} */}
-
-                                        {selectNavItemMsg.levelFlag ==3 && (<a style={{color: 'green'}}>详情</a>)}
-                                    </span>
-                                </li>
-                            )
-                        })}
-                    </ul>
-                </div>
-
-
-                {/* <!-- 上下两个div用v-if控制 -->
-                <!-- 富文本编辑器 --> */}
-                {/* <div v-else  className={contentManagement.box_1}> 
-                    <div>
-                        <el-button onClick={saveContent} type="primary" style={{float: 'right'}}>保存</el-button>
-                    </div>
-                    <!-- 标题 -->
-                    <h3 style={{textAlign: 'center',width: '100%'}}>{{detailContent.title}}</h3>
-                    <div className={contentManagement.app_container} style={{width: '100%',height: '100%'}}>
-                        <editor  id="tinymce" v-model="detailContent.content" :init="init" > </editor>
-                    </div>
-                </div> */}
-
-
-
-            </div>
-
-
-            
+            </div>            
         </div>
 
 
          {/* ---------------------------------------------------------------- */}
-
-         {/* data-bs-keyboard="false"  是否快捷键退出 */}
          {/* 新增/修改弹窗 */}
-         {/* fade */}
         <div  className="modal " id="addOrUpdateModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div className="modal-dialog">
                 <div className="modal-content">

@@ -6,9 +6,7 @@ import baseService from "../../axios/baseService"
 import { useEffect } from "react"
 import { useState ,useRef } from "react"
 import { Editor } from '@tinymce/tinymce-react';
-
-
-// import $ from 'jquery'
+import $ from 'jquery'
 
 // 自定义 标签空前缀 类样式
 const customPreNull  = " " + contentManagement.pre_null
@@ -48,19 +46,19 @@ const getNavItemList= async (levelFlag,id) => {
 
 //覆盖bootstrap的下拉菜单显示
 function useSubNavShowOrHide(event){
-    if(event.target.getAttribute("data-bs-toggle") === 'dropdown'){
+    if($(event.target).attr('data-bs-toggle') === 'dropdown'){
         //兄弟节点
-        let sibling = event.target.nextSibling
+        let sibling = $(event.target).next()
         // 默认为false
-        let pressed = event.target.getAttribute('aria-pressed') === 'true'
+        let pressed = $(event.target).attr('aria-pressed') === 'true'
         // 点击后要改变
         if(!pressed){
-            sibling.style.display = 'block'
+            sibling.css('display','block');
         }else{
-            sibling.style.display = 'none'
+            sibling.css('display','none');
         }
         //设置相反值
-        event.target.setAttribute("aria-pressed",!pressed)
+        $(event.target).attr("aria-pressed",!pressed)
         // 当折叠回来后，还要控制子元素中的下拉项全部折叠---question
         // nav的样式需要改 ----
         // useRef需要理解 -----
@@ -114,9 +112,9 @@ export default function ContentMangement(){
             baseService.put("/content",param).then((res)=>{
                 if(res.data == 'success'){
                     //提示
-                    document.getElementById('msgTip').style.display = 'block'
+                    $('#msgTip').css('display','block');
                     setTimeout(()=>{
-                        document.getElementById('msgTip').style.display = 'none'
+                        $('#msgTip').css('display','none')
                     },1500)
                 }
             })   
@@ -129,7 +127,7 @@ export default function ContentMangement(){
             setNavTree(res)
         })
         // 放在useEffect（组件挂载）中可以保证在DOM加载完成后获取到元素内容
-        const addOrUpdateModal = document.getElementById('addOrUpdateModal')
+        const addOrUpdateModal = document.getElementById('addOrUpdateModal')  //用$后，后面的监听不起作用 
         const modalInstance = new Modal(addOrUpdateModal);
         
         //弹窗点击显示事件
@@ -138,26 +136,26 @@ export default function ContentMangement(){
             let parentId  = selectNavItemMsg.parentId
             // 触发弹窗的按钮
             const button = event.relatedTarget
-            const modalTitle = addOrUpdateModal.querySelector('.modal-title')
+            const modalTitle = $(addOrUpdateModal).find('.modal-title')
             if(button.innerText === '新增'){
-                modalTitle.textContent = '新增'
+                modalTitle.text('新增')
                 itemId = ''
             }else if(button.innerText === '修改'){
-                modalTitle.textContent = '修改'
-                itemId = button.parentNode.getAttribute('data-item-id')
+                modalTitle.text('修改')
+                itemId = $(button).parent().attr('data-item-id')
             }
             await baseService.post("/management/getManagementContent?level="+levelFlag+'&id='+itemId+'&parentId='+parentId).then((res)=>{
                 let data = res.data
-                addOrUpdateModal.querySelector('#parentName').value = data.parentName
-                addOrUpdateModal.querySelector('#itemTitle').value = data.name
-                addOrUpdateModal.querySelector('#itemUrl').value = data.url
+                $(addOrUpdateModal).find('#parentName').val(data.parentName) 
+                $(addOrUpdateModal).find('#itemTitle').val(data.name) 
+                $(addOrUpdateModal).find('#itemUrl').val(data.url) 
             }).catch(err=>{console.log(err)})
         }
  
         // 表单提交
         const submitFormMsg =()=>{
-            let inputName = addOrUpdateModal.querySelector('#itemTitle').value
-            let inputUrl = addOrUpdateModal.querySelector('#itemUrl').value
+            let inputName = $(addOrUpdateModal).find('#itemTitle').val()
+            let inputUrl = $(addOrUpdateModal).find('#itemUrl').val()
             let params = {}
             params = {
                 level:selectNavItemMsg.levelFlag,
@@ -176,14 +174,14 @@ export default function ContentMangement(){
                         setNavItemList(res)
                     })
                     //提示
-                    document.getElementById('msgTip').style.display = 'block'
+                    $('#msgTip').css('display','block')
                     setTimeout(()=>{
-                        document.getElementById('msgTip').style.display = 'none'
+                        $('#msgTip').css('display','none')
                     },1500)
                     modalInstance.hide();     // 关闭弹窗
                     //关闭背景遮罩 和body残留样式 -_-  hide()只局部生效
                     let backdrop = document.querySelector('.modal-backdrop.show')
-                    backdrop && backdrop.parentNode.removeChild(backdrop)
+                    backdrop && backdrop.parentNode.removeChild(backdrop) //$的remove不起作用 ？？
                     document.body.removeAttribute('style')
                 }
             })  
@@ -210,7 +208,7 @@ export default function ContentMangement(){
         useSubNavShowOrHide(event)
         //返回导航对应的内容
         if(/nav-link/.test(event.target.className)){
-            let [levelFlag,parentId] = event.target.getAttribute('data-nav-index').split('-')
+            let [levelFlag,parentId] = $(event.target).attr('data-nav-index').split('-')
             setSelectNavItemMsg({levelFlag,parentId})
             getNavItemList(levelFlag,parentId).then((res)=>{
                 setNavItemList(res)
@@ -219,7 +217,7 @@ export default function ContentMangement(){
     }
 
     const goDetail= async (event)=>{
-        let id = event.target.parentNode.getAttribute('data-item-id')
+        let id = $(event.target).parent().attr('data-item-id')
         let content = ''
         let title = ''
         if(selectNavItemMsg.levelFlag == 3){
@@ -236,7 +234,7 @@ export default function ContentMangement(){
     }
 
     const deleteItem=(event)=>{
-        let id = event.target.parentNode.getAttribute('data-item-id')
+        let id = $(event.target).parent().attr('data-item-id')
         let confirm = window.confirm('确定要进行删除吗？')
         if(confirm){
             baseService.delete("/management/managementDelete?id="+id+"&level="+selectNavItemMsg.levelFlag).then((res)=>{
@@ -253,9 +251,9 @@ export default function ContentMangement(){
                         setNavItemList(res)
                     })
                      //提示 删除成功
-                     document.getElementById('msgTip').style.display = 'block'
+                     $('#msgTip').css('display','block')
                      setTimeout(()=>{
-                         document.getElementById('msgTip').style.display = 'none'
+                        $('#msgTip').css('display','none')
                      },1500)
                 }
             })
